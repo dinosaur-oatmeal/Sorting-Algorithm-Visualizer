@@ -5277,13 +5277,14 @@ var $elm$core$Array$fromList = function (list) {
 		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
 	}
 };
-var $author$project$Main$init = function () {
+var $author$project$Main$initialModel = function () {
 	var initialArray = $elm$core$Array$fromList(
 		_List_fromArray(
 			[9, 5, 3, 1, 6, 7, 10, 2, 4, 8]));
 	var initialTrack = {array: initialArray, didSwap: false, index: 0, sorted: false};
-	return {bubbleSortTrack: initialTrack, running: false, selectionSortTrack: initialTrack};
+	return {bubbleSortTrack: initialTrack, insertionSortTrack: initialTrack, running: false, selectionSortTrack: initialTrack};
 }();
+var $author$project$Main$init = $author$project$Main$initialModel;
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$Tick = function (a) {
@@ -5800,14 +5801,14 @@ var $author$project$BubbleSort$bubbleSortStep = F2(
 			A2($elm$core$Array$get, index, array),
 			A2($elm$core$Array$get, index + 1, array));
 		if ((_v0.a.$ === 'Just') && (_v0.b.$ === 'Just')) {
-			var a = _v0.a.a;
-			var b = _v0.b.a;
-			if (_Utils_cmp(a, b) > 0) {
+			var currentValue = _v0.a.a;
+			var nextValue = _v0.b.a;
+			if (_Utils_cmp(currentValue, nextValue) > 0) {
 				var swappedArray = A3(
 					$elm$core$Array$set,
 					index,
-					b,
-					A3($elm$core$Array$set, index + 1, a, array));
+					nextValue,
+					A3($elm$core$Array$set, index + 1, currentValue, array));
 				return _Utils_Tuple2(swappedArray, true);
 			} else {
 				return _Utils_Tuple2(array, false);
@@ -5815,6 +5816,46 @@ var $author$project$BubbleSort$bubbleSortStep = F2(
 		} else {
 			return _Utils_Tuple2(array, false);
 		}
+	});
+var $author$project$InsertionSort$insertionSortStep = F2(
+	function (array, index) {
+		var moveBackward = F2(
+			function (currentArray, currentIndex) {
+				moveBackward:
+				while (true) {
+					if (currentIndex <= 0) {
+						return _Utils_Tuple2(currentArray, false);
+					} else {
+						var _v0 = _Utils_Tuple2(
+							A2($elm$core$Array$get, currentIndex, currentArray),
+							A2($elm$core$Array$get, currentIndex - 1, currentArray));
+						if ((_v0.a.$ === 'Just') && (_v0.b.$ === 'Just')) {
+							var currentValue = _v0.a.a;
+							var previousValue = _v0.b.a;
+							if (_Utils_cmp(currentValue, previousValue) < 0) {
+								var swappedArray = A3(
+									$elm$core$Array$set,
+									currentIndex,
+									previousValue,
+									A3($elm$core$Array$set, currentIndex - 1, currentValue, currentArray));
+								var $temp$currentArray = swappedArray,
+									$temp$currentIndex = currentIndex - 1;
+								currentArray = $temp$currentArray;
+								currentIndex = $temp$currentIndex;
+								continue moveBackward;
+							} else {
+								return _Utils_Tuple2(currentArray, false);
+							}
+						} else {
+							return _Utils_Tuple2(currentArray, false);
+						}
+					}
+				}
+			});
+		var _v1 = A2(moveBackward, array, index);
+		var newArray = _v1.a;
+		var didSwap = _v1.b;
+		return _Utils_Tuple2(newArray, didSwap);
 	});
 var $elm$core$Array$length = function (_v0) {
 	var len = _v0.a;
@@ -5891,16 +5932,16 @@ var $author$project$Main$updateSortingTrack = F2(
 		} else {
 			var nextIndex = (_Utils_cmp(
 				track.index,
-				$elm$core$Array$length(track.array) - 2) > -1) ? 0 : (track.index + 1);
+				$elm$core$Array$length(track.array) - 1) > -1) ? 0 : (track.index + 1);
 			var _v0 = A2(sortStep, track.array, track.index);
 			var newArray = _v0.a;
 			var swapOccurred = _v0.b;
 			var isSorted = (_Utils_cmp(
 				track.index,
-				$elm$core$Array$length(track.array) - 2) > -1) ? (!(track.didSwap || swapOccurred)) : false;
+				$elm$core$Array$length(track.array) - 1) > -1) ? (!(track.didSwap || swapOccurred)) : false;
 			var resetDidSwap = (_Utils_cmp(
 				track.index,
-				$elm$core$Array$length(track.array) - 2) > -1) ? false : (track.didSwap || swapOccurred);
+				$elm$core$Array$length(track.array) - 1) > -1) ? false : (track.didSwap || swapOccurred);
 			return _Utils_update(
 				track,
 				{array: newArray, didSwap: resetDidSwap, index: nextIndex, sorted: isSorted});
@@ -5925,23 +5966,35 @@ var $author$project$Main$update = F2(
 							selectionSortTrack: A2($author$project$Main$updateSortingTrack, model.selectionSortTrack, $author$project$SelectionSort$selectionSortStep)
 						}),
 					$elm$core$Platform$Cmd$none);
+			case 'StepInsertionSort':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							insertionSortTrack: A2($author$project$Main$updateSortingTrack, model.insertionSortTrack, $author$project$InsertionSort$insertionSortStep)
+						}),
+					$elm$core$Platform$Cmd$none);
 			case 'Start':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{running: true}),
 					$elm$core$Platform$Cmd$none);
+			case 'Reset':
+				return _Utils_Tuple2($author$project$Main$initialModel, $elm$core$Platform$Cmd$none);
 			default:
 				return model.running ? _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
 							bubbleSortTrack: A2($author$project$Main$updateSortingTrack, model.bubbleSortTrack, $author$project$BubbleSort$bubbleSortStep),
+							insertionSortTrack: A2($author$project$Main$updateSortingTrack, model.insertionSortTrack, $author$project$InsertionSort$insertionSortStep),
 							selectionSortTrack: A2($author$project$Main$updateSortingTrack, model.selectionSortTrack, $author$project$SelectionSort$selectionSortStep)
 						}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Main$Reset = {$: 'Reset'};
 var $author$project$Main$Start = {$: 'Start'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
@@ -6026,30 +6079,52 @@ var $author$project$Visualization$renderBarChart = F4(
 						$elm$core$Array$toList(array)))
 				]));
 	});
-var $author$project$Visualization$renderComparison = F8(
-	function (array1, title1, sorted1, currentIndex1, array2, title2, sorted2, currentIndex2) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-					A2($elm$html$Html$Attributes$style, 'justify-content', 'space-around'),
-					A2($elm$html$Html$Attributes$style, 'width', '100%'),
-					A2($elm$html$Html$Attributes$style, 'padding', '20px')
-				]),
-			_List_fromArray(
-				[
-					A4($author$project$Visualization$renderBarChart, array1, title1, sorted1, currentIndex1),
-					A4($author$project$Visualization$renderBarChart, array2, title2, sorted2, currentIndex2)
-				]));
-	});
+var $author$project$Visualization$renderComparison = function (array1) {
+	return function (title1) {
+		return function (sorted1) {
+			return function (currentIndex1) {
+				return function (array2) {
+					return function (title2) {
+						return function (sorted2) {
+							return function (currentIndex2) {
+								return function (array3) {
+									return function (title3) {
+										return function (sorted3) {
+											return function (currentIndex3) {
+												return A2(
+													$elm$html$Html$div,
+													_List_fromArray(
+														[
+															A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+															A2($elm$html$Html$Attributes$style, 'justify-content', 'space-around'),
+															A2($elm$html$Html$Attributes$style, 'width', '100%'),
+															A2($elm$html$Html$Attributes$style, 'padding', '20px')
+														]),
+													_List_fromArray(
+														[
+															A4($author$project$Visualization$renderBarChart, array1, title1, sorted1, currentIndex1),
+															A4($author$project$Visualization$renderBarChart, array2, title2, sorted2, currentIndex2),
+															A4($author$project$Visualization$renderBarChart, array3, title3, sorted3, currentIndex3)
+														]));
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
-				A8($author$project$Visualization$renderComparison, model.bubbleSortTrack.array, 'Bubble Sort', model.bubbleSortTrack.sorted, model.bubbleSortTrack.index, model.selectionSortTrack.array, 'Selection Sort', model.selectionSortTrack.sorted, model.selectionSortTrack.index),
+				$author$project$Visualization$renderComparison(model.bubbleSortTrack.array)('Bubble Sort')(model.bubbleSortTrack.sorted)(model.bubbleSortTrack.index)(model.selectionSortTrack.array)('Selection Sort')(model.selectionSortTrack.sorted)(model.selectionSortTrack.index)(model.insertionSortTrack.array)('Insertion Sort')(model.insertionSortTrack.sorted)(model.insertionSortTrack.index),
 				A2(
 				$elm$html$Html$button,
 				_List_fromArray(
@@ -6059,6 +6134,16 @@ var $author$project$Main$view = function (model) {
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Start')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick($author$project$Main$Reset)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Reset')
 					]))
 			]));
 };

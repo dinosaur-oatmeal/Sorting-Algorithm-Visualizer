@@ -10,12 +10,12 @@ bubbleSortStep array index =
     -- Use case to avoid issues with comparing Maybe Int
     case (Array.get index array, Array.get (index + 1) array) of
         -- Valid Ints to be compared
-        (Just a, Just b) ->
-            if a > b then
+        (Just currentValue, Just nextValue) ->
+            if currentValue > nextValue then
                 -- Swap the elements
                 let
                     swappedArray =
-                        Array.set index b (Array.set (index + 1) a array)
+                        Array.set index nextValue (Array.set (index + 1) currentValue array)
                 in
                 (swappedArray, True)
             else

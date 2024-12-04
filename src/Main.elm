@@ -17,6 +17,7 @@ import Task
 -- Sorting Algorithms
 import BubbleSort exposing (bubbleSortStep)
 import SelectionSort exposing (selectionSortStep)
+import InsertionSort exposing (insertionSortStep)
 
 -- Visuals
 import Visualization exposing (renderComparison)
@@ -56,6 +57,7 @@ type alias Model =
     -- List of sorting algorithms all with their own record
     { bubbleSortTrack : SortingTrack
     , selectionSortTrack : SortingTrack
+    , insertionSortTrack : SortingTrack
     -- Is the program actively sorting
     , running : Bool
     }
@@ -64,7 +66,11 @@ type alias Model =
 -- INIT
 
 init : Model
-init =
+init = initialModel
+
+initialModel : Model
+-- Store initial values in model for "Reset" button
+initialModel =
     let
         -- First iteration of model and isn't sorted
         initialArray = Array.fromList [9, 5, 3, 1, 6, 7, 10, 2, 4, 8]
@@ -74,10 +80,10 @@ init =
             , sorted = False
             , didSwap = False
             }
-    -- Pack that content into each sorting algorithm and set running to false
     in
     { bubbleSortTrack = initialTrack
     , selectionSortTrack = initialTrack
+    , insertionSortTrack = initialTrack
     , running = False
     }
 
@@ -87,7 +93,9 @@ init =
 type Msg
     = StepBubbleSort
     | StepSelectionSort
+    | StepInsertionSort
     | Start
+    | Reset
     | Tick Time.Posix
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -99,9 +107,15 @@ update msg model =
             , Cmd.none
             )
 
-        -- Do a step of SeclectionSort (don't issue any commands)
+        -- Do a step of SelectionSort (don't issue any commands)
         StepSelectionSort ->
             ( { model | selectionSortTrack = updateSortingTrack model.selectionSortTrack selectionSortStep }
+            , Cmd.none
+            )
+        
+        -- Do a step of InsertionSort
+        StepInsertionSort ->
+            ( { model | insertionSortTrack = updateSortingTrack model.insertionSortTrack insertionSortStep }
             , Cmd.none
             )
 
@@ -111,6 +125,10 @@ update msg model =
             , Cmd.none
             )
 
+        -- Reset to initial program state
+        Reset ->
+            ( initialModel, Cmd.none )
+
         -- Advance all sorting algorithms if running is true
         Tick _ ->
             if model.running then
@@ -119,6 +137,8 @@ update msg model =
                     | bubbleSortTrack = updateSortingTrack model.bubbleSortTrack bubbleSortStep
                     -- Calls SelectionSort.elm
                     , selectionSortTrack = updateSortingTrack model.selectionSortTrack selectionSortStep
+                    -- Calls InsertionSort.elm
+                    , insertionSortTrack = updateSortingTrack model.insertionSortTrack insertionSortStep
                   }
                 , Cmd.none
                 )
@@ -130,7 +150,7 @@ update msg model =
 updateSortingTrack : SortingTrack -> (Array Int -> Int -> (Array Int, Bool)) -> SortingTrack
 -- sortStep is the function that does a single step of sorting
 updateSortingTrack track sortStep =
-    -- Don't update track if already sorted
+     -- Don't update track if already sorted
     if track.sorted then
         track
     else
@@ -143,7 +163,7 @@ updateSortingTrack track sortStep =
 
             nextIndex =
                 -- Next pass of array
-                if track.index >= Array.length track.array - 2 then
+                if track.index >= Array.length track.array - 1 then
                     0
                 -- Increment index by 1
                 else
@@ -151,19 +171,19 @@ updateSortingTrack track sortStep =
 
             -- True if at the end of the array and no swaps occured during pass
             isSorted =
-                if track.index >= Array.length track.array - 2 then
+                if track.index >= Array.length track.array - 1 then
                     not (track.didSwap || swapOccurred)
                 else
                     False
 
             -- Reset swap value at the end of each pass
             resetDidSwap =
-                if track.index >= Array.length track.array - 2 then
+                if track.index >= Array.length track.array - 1 then
                     False
                 else
                     track.didSwap || swapOccurred
 
-        -- Pack into track for next step
+        -- Package into track for next step
         in
         { track
             | array = newArray
@@ -171,6 +191,7 @@ updateSortingTrack track sortStep =
             , sorted = isSorted
             , didSwap = resetDidSwap
         }
+
 
 -- SUBSCRIPTIONS
 
@@ -191,15 +212,26 @@ view model =
     div []
         -- Render comparisons for all sorting algorithms (calls Visualization.elm)
         [ renderComparison
+            -- BubbleSort
             model.bubbleSortTrack.array
             "Bubble Sort"
             model.bubbleSortTrack.sorted
             model.bubbleSortTrack.index
+
+            -- SelectionSort
             model.selectionSortTrack.array
             "Selection Sort"
             model.selectionSortTrack.sorted
             model.selectionSortTrack.index
+
+            -- InsertionSort
+            model.insertionSortTrack.array
+            "Insertion Sort"
+            model.insertionSortTrack.sorted
+            model.insertionSortTrack.index
+
         , button [ onClick Start ] [ text "Start" ]
+        , button [ onClick Reset ] [ text "Reset" ]
         ]
 
 -- Convert Bool to String
