@@ -1,0 +1,19 @@
+.bar-chart {
+    display: flex;
+    align-items: flex-end; /* Align bars to the bottom of the container */
+    justify-content: space-around;
+    height: 300px; /* Set a fixed height for the chart */
+    border: 1px solid #ddd; /* Optional: Add a border for clarity */
+    margin: 20px;
+}
+
+.bar {
+    width: 20px;
+    margin: 2px;
+    background-color: steelblue;
+    transition: height 0.3s ease; /* Smooth height transition for better visuals */
+}
+
+.bar:hover {
+    background-color: darkblue;
+}

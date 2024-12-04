@@ -2,129 +2,210 @@
 -- elm make src/Main.elm --output elm.js
 -- live-server
 
--- .. means everything is exposed
+-- .. means everything is exposed (necessary in main)
 module Main exposing (..)
 
--- Import statements
 import Browser
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
 import Array exposing (Array)
 
+-- Timing
+import Time
+import Task
+
+-- Sorting Algorithms
+import BubbleSort exposing (bubbleSortStep)
+import SelectionSort exposing (selectionSortStep)
+
+-- Visuals
+import Visualization exposing (renderComparison)
+
 -- MAIN
 
+main : Program () Model Msg
 main =
-    Browser.sandbox
-        { init = init
+    -- .element lets me use subscriptions and timing for the model updates
+    Browser.element
+        -- Ignore flags and return init with no initial commands
+        { init = \_ -> (init, Cmd.none)
         , update = update
+        -- External events from model (time)
+        , subscriptions = subscriptions
         , view = view
         }
 
--- MODEL
 
-type alias Model =
+-- TRACK MODEL
+
+-- State of each sorting algorithm
+type alias SortingTrack =
+    -- Array that's being sorted
     { array : Array Int
+    -- Index being looked at
     , index : Int
+    -- Is the array sorted
     , sorted : Bool
+    -- Were elements swapped during the last pass
     , didSwap : Bool
     }
+
+-- MODEL (list of sorting algorithms and if the program is running)
+
+type alias Model =
+    -- List of sorting algorithms all with their own record
+    { bubbleSortTrack : SortingTrack
+    , selectionSortTrack : SortingTrack
+    -- Is the program actively sorting
+    , running : Bool
+    }
+
 
 -- INIT
 
 init : Model
 init =
-    { array = Array.fromList [9, 5, 3, 1, 6, 7, 10, 2, 4, 8]
-    , index = 0
-    , sorted = False
-    , didSwap = False
+    let
+        -- First iteration of model and isn't sorted
+        initialArray = Array.fromList [9, 5, 3, 1, 6, 7, 10, 2, 4, 8]
+        initialTrack =
+            { array = initialArray
+            , index = 0
+            , sorted = False
+            , didSwap = False
+            }
+    -- Pack that content into each sorting algorithm and set running to false
+    in
+    { bubbleSortTrack = initialTrack
+    , selectionSortTrack = initialTrack
+    , running = False
     }
 
 -- UPDATE
 
+-- All messages/events that can change the application state
 type Msg
-    = Step
+    = StepBubbleSort
+    | StepSelectionSort
+    | Start
+    | Tick Time.Posix
 
-update : Msg -> Model -> Model
-update Step model =
-    -- Don't change the model if it's sorted
-    if model.sorted then
-        model
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+    case msg of
+        -- Do a step of BubbleSort (don't issue any commands)
+        StepBubbleSort ->
+            ( { model | bubbleSortTrack = updateSortingTrack model.bubbleSortTrack bubbleSortStep }
+            , Cmd.none
+            )
+
+        -- Do a step of SeclectionSort (don't issue any commands)
+        StepSelectionSort ->
+            ( { model | selectionSortTrack = updateSortingTrack model.selectionSortTrack selectionSortStep }
+            , Cmd.none
+            )
+
+        -- Set running flag to true
+        Start ->
+            ( { model | running = True }
+            , Cmd.none
+            )
+
+        -- Advance all sorting algorithms if running is true
+        Tick _ ->
+            if model.running then
+                ( { model
+                    -- Calls BubbleSort.elm
+                    | bubbleSortTrack = updateSortingTrack model.bubbleSortTrack bubbleSortStep
+                    -- Calls SelectionSort.elm
+                    , selectionSortTrack = updateSortingTrack model.selectionSortTrack selectionSortStep
+                  }
+                , Cmd.none
+                )
+            
+            -- Don't change model if running isn't true
+            else
+                (model, Cmd.none)
+
+updateSortingTrack : SortingTrack -> (Array Int -> Int -> (Array Int, Bool)) -> SortingTrack
+-- sortStep is the function that does a single step of sorting
+updateSortingTrack track sortStep =
+    -- Don't update track if already sorted
+    if track.sorted then
+        track
     else
         let
-            -- Perform one step of bubble sort
+            -- Get new array and track swaps
+            -- (Array Int, Bool)
             (newArray, swapOccurred) =
-                bubbleSortStep model.array model.index
+                -- Run step function for specific sort (Array Int, Int)
+                sortStep track.array track.index
 
             nextIndex =
-                -- Reset to beginning if end of array reached (next pass)
-                if model.index >= Array.length model.array - 2 then
+                -- Next pass of array
+                if track.index >= Array.length track.array - 2 then
                     0
                 -- Increment index by 1
                 else
-                    model.index + 1
+                    track.index + 1
 
+            -- True if at the end of the array and no swaps occured during pass
             isSorted =
-                -- End of array reached and no swaps occured on this pass
-                if model.index >= Array.length model.array - 2 then
-                    not (model.didSwap || swapOccurred)
+                if track.index >= Array.length track.array - 2 then
+                    not (track.didSwap || swapOccurred)
                 else
                     False
 
+            -- Reset swap value at the end of each pass
             resetDidSwap =
-                -- Reset swap to false if starting new pass
-                if model.index >= Array.length model.array - 2 then
+                if track.index >= Array.length track.array - 2 then
                     False
-                -- True if previously swapped during pass
                 else
-                    model.didSwap || swapOccurred
+                    track.didSwap || swapOccurred
+
+        -- Pack into track for next step
         in
-        { model
+        { track
             | array = newArray
             , index = nextIndex
             , sorted = isSorted
             , didSwap = resetDidSwap
         }
 
-bubbleSortStep : Array Int -> Int -> (Array Int, Bool)
-bubbleSortStep array index =
-    -- Use case to avoid issues with comparing Maybe Int
-    case (Array.get index array, Array.get (index + 1) array) of
-        -- Valid Ints to be compared
-        (Just a, Just b) ->
-            if a > b then
-                -- Swap the elements
-                let
-                    swappedArray =
-                        Array.set index b (Array.set (index + 1) a array)
-                in
-                (swappedArray, True)
-            else
-                -- No swap needed
-                (array, False)
+-- SUBSCRIPTIONS
 
-        _ ->
-            -- Default case: Do nothing if out of bounds
-            (array, False)
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    -- Send an update every 0.5 seconds
+    if model.running then
+        Time.every 500 Tick
+    -- Model isn't running
+    else
+        Sub.none
+
 
 -- VIEW
 
 view : Model -> Html Msg
 view model =
     div []
-        [ div [] [ text ("Array: " ++ (String.join ", " (Array.toList model.array |> List.map String.fromInt))) ]
-        , div [] [ text ("Index: " ++ String.fromInt model.index) ]
-        , div [] [ text ("Sorted: " ++ stringFromBool model.sorted) ]
-        , div [] [ text ("Did Swap: " ++ stringFromBool model.didSwap) ]
-        , button [ onClick Step ] [ text "Step" ]
+        -- Render comparisons for all sorting algorithms (calls Visualization.elm)
+        [ renderComparison
+            model.bubbleSortTrack.array
+            "Bubble Sort"
+            model.bubbleSortTrack.sorted
+            model.bubbleSortTrack.index
+            model.selectionSortTrack.array
+            "Selection Sort"
+            model.selectionSortTrack.sorted
+            model.selectionSortTrack.index
+        , button [ onClick Start ] [ text "Start" ]
         ]
 
-
-
--- Convert Bool to String value
+-- Convert Bool to String
 stringFromBool : Bool -> String
 stringFromBool value =
-  if value then
-    "True"
-
-  else
-    "False"
+    if value then
+        "True"
+    else
+        "False"
