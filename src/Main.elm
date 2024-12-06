@@ -5,9 +5,13 @@
 -- .. means everything is exposed (necessary in main)
 module Main exposing (..)
 
+-- HTML
 import Browser
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
+import Html.Attributes exposing (style)
+
+-- Array
 import Array exposing (Array)
 
 -- Timing
@@ -210,30 +214,44 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div []
-        -- Render comparisons for sorting algorithms (calls Visualization.elm)
-        [ renderComparison
-            -- BubbleSort
-            model.bubbleSortTrack.array
-            "Bubble Sort"
-            model.bubbleSortTrack.sorted
-            model.bubbleSortTrack.index
+        [ div
+            [ style "display" "flex"
+            , style "justify-content" "space-around"
+            , style "align-items" "flex-start"
+            -- Keep charts in the same row
+            , style "flex-wrap" "nowrap"
+            , style "gap" "20px"
+            , style "padding" "20px"
+            ]
+            [ renderComparison
+                -- BubbleSort
+                model.bubbleSortTrack.array
+                "Bubble Sort"
+                model.bubbleSortTrack.sorted
+                model.bubbleSortTrack.index
 
-        , renderComparison
-            -- SelectionSort
-            model.selectionSortTrack.array
-            "Selection Sort"
-            model.selectionSortTrack.sorted
-            model.selectionSortTrack.index
+            , renderComparison
+                -- SelectionSort
+                model.selectionSortTrack.array
+                "Selection Sort"
+                model.selectionSortTrack.sorted
+                model.selectionSortTrack.index
 
-        , renderComparison
-            -- InsertionSort
-            model.insertionSortTrack.array
-            "Insertion Sort"
-            model.insertionSortTrack.sorted
-            model.insertionSortTrack.index
+            , renderComparison
+                -- InsertionSort
+                model.insertionSortTrack.array
+                "Insertion Sort"
+                model.insertionSortTrack.sorted
+                model.insertionSortTrack.index
+            ]
 
-        , button [ onClick Start ] [ text "Start" ]
-        , button [ onClick Reset ] [ text "Reset" ]
+        , div
+            [ style "text-align" "center"
+            , style "margin-top" "20px"
+            ]
+            [ button [ onClick Start ] [ text "Start" ]
+            , button [ onClick Reset ] [ text "Reset" ]
+            ]
         ]
 
 -- Convert Bool to String

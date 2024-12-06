@@ -6079,71 +6079,74 @@ var $author$project$Visualization$renderBarChart = F4(
 						$elm$core$Array$toList(array)))
 				]));
 	});
-var $author$project$Visualization$renderComparison = function (array1) {
-	return function (title1) {
-		return function (sorted1) {
-			return function (currentIndex1) {
-				return function (array2) {
-					return function (title2) {
-						return function (sorted2) {
-							return function (currentIndex2) {
-								return function (array3) {
-									return function (title3) {
-										return function (sorted3) {
-											return function (currentIndex3) {
-												return A2(
-													$elm$html$Html$div,
-													_List_fromArray(
-														[
-															A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-															A2($elm$html$Html$Attributes$style, 'justify-content', 'space-around'),
-															A2($elm$html$Html$Attributes$style, 'width', '100%'),
-															A2($elm$html$Html$Attributes$style, 'padding', '20px')
-														]),
-													_List_fromArray(
-														[
-															A4($author$project$Visualization$renderBarChart, array1, title1, sorted1, currentIndex1),
-															A4($author$project$Visualization$renderBarChart, array2, title2, sorted2, currentIndex2),
-															A4($author$project$Visualization$renderBarChart, array3, title3, sorted3, currentIndex3)
-														]));
-											};
-										};
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
-	};
-};
+var $author$project$Visualization$renderComparison = F4(
+	function (array1, title1, sorted1, currentIndex1) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'justify-content', 'space-around'),
+					A2($elm$html$Html$Attributes$style, 'width', '100%'),
+					A2($elm$html$Html$Attributes$style, 'padding', '20px')
+				]),
+			_List_fromArray(
+				[
+					A4($author$project$Visualization$renderBarChart, array1, title1, sorted1, currentIndex1)
+				]));
+	});
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$Visualization$renderComparison(model.bubbleSortTrack.array)('Bubble Sort')(model.bubbleSortTrack.sorted)(model.bubbleSortTrack.index)(model.selectionSortTrack.array)('Selection Sort')(model.selectionSortTrack.sorted)(model.selectionSortTrack.index)(model.insertionSortTrack.array)('Insertion Sort')(model.insertionSortTrack.sorted)(model.insertionSortTrack.index),
 				A2(
-				$elm$html$Html$button,
+				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Events$onClick($author$project$Main$Start)
+						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2($elm$html$Html$Attributes$style, 'justify-content', 'space-around'),
+						A2($elm$html$Html$Attributes$style, 'align-items', 'flex-start'),
+						A2($elm$html$Html$Attributes$style, 'flex-wrap', 'nowrap'),
+						A2($elm$html$Html$Attributes$style, 'gap', '20px'),
+						A2($elm$html$Html$Attributes$style, 'padding', '20px')
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text('Start')
+						A4($author$project$Visualization$renderComparison, model.bubbleSortTrack.array, 'Bubble Sort', model.bubbleSortTrack.sorted, model.bubbleSortTrack.index),
+						A4($author$project$Visualization$renderComparison, model.selectionSortTrack.array, 'Selection Sort', model.selectionSortTrack.sorted, model.selectionSortTrack.index),
+						A4($author$project$Visualization$renderComparison, model.insertionSortTrack.array, 'Insertion Sort', model.insertionSortTrack.sorted, model.insertionSortTrack.index)
 					])),
 				A2(
-				$elm$html$Html$button,
+				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Events$onClick($author$project$Main$Reset)
+						A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+						A2($elm$html$Html$Attributes$style, 'margin-top', '20px')
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text('Reset')
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick($author$project$Main$Start)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Start')
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick($author$project$Main$Reset)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Reset')
+							]))
 					]))
 			]));
 };
