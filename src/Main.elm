@@ -210,7 +210,7 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div []
-        -- Render comparisons for all sorting algorithms (calls Visualization.elm)
+        -- Render comparisons for sorting algorithms (calls Visualization.elm)
         [ renderComparison
             -- BubbleSort
             model.bubbleSortTrack.array
@@ -218,12 +218,14 @@ view model =
             model.bubbleSortTrack.sorted
             model.bubbleSortTrack.index
 
+        , renderComparison
             -- SelectionSort
             model.selectionSortTrack.array
             "Selection Sort"
             model.selectionSortTrack.sorted
             model.selectionSortTrack.index
 
+        , renderComparison
             -- InsertionSort
             model.insertionSortTrack.array
             "Insertion Sort"

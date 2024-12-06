@@ -9,13 +9,9 @@ import String
 -- Render comparison for sorting algorithms
 renderComparison : 
     Array Int -> String -> Bool -> Int -> 
-    Array Int -> String -> Bool -> Int ->
-    Array Int -> String -> Bool -> Int -> 
     Html msg
 renderComparison 
-    array1 title1 sorted1 currentIndex1 
-    array2 title2 sorted2 currentIndex2
-    array3 title3 sorted3 currentIndex3 =
+    array1 title1 sorted1 currentIndex1 =
     
     div 
         [ style "display" "flex"
@@ -23,14 +19,12 @@ renderComparison
         , style "width" "100%"
         , style "padding" "20px"
         ]
-        -- Render charts for each sorting algorithm
+        -- Render chart with specific algorithm info
         [ renderBarChart array1 title1 sorted1 currentIndex1
-        , renderBarChart array2 title2 sorted2 currentIndex2
-        , renderBarChart array3 title3 sorted3 currentIndex3
         ]
 
 
--- Render bar chart for each sorting algorithm
+-- Render bar chart for a sorting algorithm
 renderBarChart : 
     Array Int -> String -> Bool -> Int -> 
     Html msg
