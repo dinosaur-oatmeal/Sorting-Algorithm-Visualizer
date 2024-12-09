@@ -1,99 +1,71 @@
--- start with elm init
--- elm make src/Main.elm --output elm.js
--- live-server
+module Main exposing (main)
 
--- .. means everything is exposed (necessary in main)
-module Main exposing (..)
-
--- HTML
+-- HTML Elements
 import Browser
 import Html exposing (Html, button, div, text)
-import Html.Events exposing (onClick)
 import Html.Attributes exposing (style)
+import Html.Events exposing (onClick)
 
--- Array
+-- Array and Timing
 import Array exposing (Array)
-
--- Timing
 import Time
-import Task
 
--- Sorting Algorithms
-import BubbleSort exposing (bubbleSortStep)
-import SelectionSort exposing (selectionSortStep)
-import InsertionSort exposing (insertionSortStep)
-
--- Visuals
+-- Visualization for converting model into charts
 import Visualization exposing (renderComparison)
 
--- MAIN
+-- Sorting Algorithms
+import BubbleSort
+import SelectionSort
+import InsertionSort
 
+-- Access to structs needed for program
+import Structs exposing (Model, SortingTrack)
+
+-- Set up a SortingTrack when given an array
+initialTrack : Array Int -> SortingTrack
+initialTrack arr =
+    { array = arr
+    , outerIndex = 0
+    , compareIndex = 1
+    , minIndex = 0
+    , sorted = False
+    , didSwap = False
+    }
+
+-- Initial state of the application
+initialModel : Model
+initialModel =
+    let
+        -- Initial array for all algorithms to sort
+        initialArray = Array.fromList [9, 5, 3, 1, 6, 7, 10, 2, 4, 8]
+    in
+    { bubbleSortTrack = initialTrack initialArray
+
+    -- minIndex initialized to outerIndex for tracking to be correct
+    , selectionSortTrack = 
+        let
+            track = initialTrack initialArray
+        in
+            { track | minIndex = track.outerIndex }
+    , insertionSortTrack = initialTrack initialArray
+    -- Don't run sorting algorithms until "Start" button pressed
+    , running = False
+    }
+
+-- Use Browser.element to allow subscriptions (timing)
 main : Program () Model Msg
 main =
-    -- .element lets me use subscriptions and timing for the model updates
     Browser.element
-        -- Ignore flags and return init with no initial commands
-        { init = \_ -> (init, Cmd.none)
+        { init = \_ -> (initialModel, Cmd.none)
         , update = update
-        -- External events from model (time)
         , subscriptions = subscriptions
         , view = view
         }
 
 
--- TRACK MODEL
+-- MESSAGES
 
--- State of each sorting algorithm
-type alias SortingTrack =
-    -- Array that's being sorted
-    { array : Array Int
-    -- Index being looked at
-    , index : Int
-    -- Is the array sorted
-    , sorted : Bool
-    -- Were elements swapped during the last pass
-    , didSwap : Bool
-    }
-
--- MODEL (list of sorting algorithms and if the program is running)
-
-type alias Model =
-    -- List of sorting algorithms all with their own record
-    { bubbleSortTrack : SortingTrack
-    , selectionSortTrack : SortingTrack
-    , insertionSortTrack : SortingTrack
-    -- Is the program actively sorting
-    , running : Bool
-    }
-
-
--- INIT
-
-init : Model
-init = initialModel
-
-initialModel : Model
--- Store initial values in model for "Reset" button
-initialModel =
-    let
-        -- First iteration of model and isn't sorted
-        initialArray = Array.fromList [9, 5, 3, 1, 6, 7, 10, 2, 4, 8]
-        initialTrack =
-            { array = initialArray
-            , index = 0
-            , sorted = False
-            , didSwap = False
-            }
-    in
-    { bubbleSortTrack = initialTrack
-    , selectionSortTrack = initialTrack
-    , insertionSortTrack = initialTrack
-    , running = False
-    }
-
--- UPDATE
-
--- All messages/events that can change the application state
+-- List of all possible messages that will change our model (application's) state
 type Msg
     = StepBubbleSort
     | StepSelectionSort
@@ -102,109 +74,60 @@ type Msg
     | Reset
     | Tick Time.Posix
 
+
+-- UPDATE
+
+-- Handles all state changes:
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        -- Do a step of BubbleSort (don't issue any commands)
+
+        -- One step of BubbleSort (calls BubbleSort.elm)
         StepBubbleSort ->
-            ( { model | bubbleSortTrack = updateSortingTrack model.bubbleSortTrack bubbleSortStep }
+            ( { model | bubbleSortTrack = BubbleSort.bubbleSortStep model.bubbleSortTrack }
             , Cmd.none
             )
 
-        -- Do a step of SelectionSort (don't issue any commands)
+        -- One step of SelectionSort (calls SelectionSort.elm)
         StepSelectionSort ->
-            ( { model | selectionSortTrack = updateSortingTrack model.selectionSortTrack selectionSortStep }
+            ( { model | selectionSortTrack = SelectionSort.selectionSortStep model.selectionSortTrack }
             , Cmd.none
             )
-        
-        -- Do a step of InsertionSort
+
+        -- One step of InsertionSort (calls InsertionSort.elm)
         StepInsertionSort ->
-            ( { model | insertionSortTrack = updateSortingTrack model.insertionSortTrack insertionSortStep }
+            ( { model | insertionSortTrack = InsertionSort.insertionSortStep model.insertionSortTrack }
             , Cmd.none
             )
 
-        -- Set running flag to true
+        -- Set model running state to True
         Start ->
-            ( { model | running = True }
-            , Cmd.none
-            )
+            ( { model | running = True }, Cmd.none )
 
-        -- Reset to initial program state
         Reset ->
             ( initialModel, Cmd.none )
 
-        -- Advance all sorting algorithms if running is true
+        -- See if the algorithm is running and step all algorithms once if so
         Tick _ ->
             if model.running then
                 ( { model
-                    -- Calls BubbleSort.elm
-                    | bubbleSortTrack = updateSortingTrack model.bubbleSortTrack bubbleSortStep
-                    -- Calls SelectionSort.elm
-                    , selectionSortTrack = updateSortingTrack model.selectionSortTrack selectionSortStep
-                    -- Calls InsertionSort.elm
-                    , insertionSortTrack = updateSortingTrack model.insertionSortTrack insertionSortStep
+                    | bubbleSortTrack = BubbleSort.bubbleSortStep model.bubbleSortTrack
+                    , selectionSortTrack = SelectionSort.selectionSortStep model.selectionSortTrack
+                    , insertionSortTrack = InsertionSort.insertionSortStep model.insertionSortTrack
                   }
                 , Cmd.none
                 )
-            
-            -- Don't change model if running isn't true
             else
                 (model, Cmd.none)
-
-updateSortingTrack : SortingTrack -> (Array Int -> Int -> (Array Int, Bool)) -> SortingTrack
--- sortStep is the function that does a single step of sorting
-updateSortingTrack track sortStep =
-     -- Don't update track if already sorted
-    if track.sorted then
-        track
-    else
-        let
-            -- Get new array and track swaps
-            -- (Array Int, Bool)
-            (newArray, swapOccurred) =
-                -- Run step function for specific sort (Array Int, Int)
-                sortStep track.array track.index
-
-            nextIndex =
-                -- Next pass of array
-                if track.index >= Array.length track.array - 1 then
-                    0
-                -- Increment index by 1
-                else
-                    track.index + 1
-
-            -- True if at the end of the array and no swaps occured during pass
-            isSorted =
-                if track.index >= Array.length track.array - 1 then
-                    not (track.didSwap || swapOccurred)
-                else
-                    False
-
-            -- Reset swap value at the end of each pass
-            resetDidSwap =
-                if track.index >= Array.length track.array - 1 then
-                    False
-                else
-                    track.didSwap || swapOccurred
-
-        -- Package into track for next step
-        in
-        { track
-            | array = newArray
-            , index = nextIndex
-            , sorted = isSorted
-            , didSwap = resetDidSwap
-        }
 
 
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    -- Send an update every 0.5 seconds
+    -- Automatically step every 0.5 seconds if the running flag is True
     if model.running then
         Time.every 500 Tick
-    -- Model isn't running
     else
         Sub.none
 
@@ -212,13 +135,14 @@ subscriptions model =
 -- VIEW
 
 view : Model -> Html Msg
+-- Render the charts and buttons onto the screen
 view model =
     div []
         [ div
+            -- Styling for charts
             [ style "display" "flex"
             , style "justify-content" "space-around"
             , style "align-items" "flex-start"
-            -- Keep charts in the same row
             , style "flex-wrap" "nowrap"
             , style "gap" "20px"
             , style "padding" "20px"
@@ -228,36 +152,36 @@ view model =
                 model.bubbleSortTrack.array
                 "Bubble Sort"
                 model.bubbleSortTrack.sorted
-                model.bubbleSortTrack.index
+                model.bubbleSortTrack.outerIndex
+                (Just model.bubbleSortTrack.compareIndex)
+                Nothing
 
             , renderComparison
                 -- SelectionSort
                 model.selectionSortTrack.array
                 "Selection Sort"
                 model.selectionSortTrack.sorted
-                model.selectionSortTrack.index
+                model.selectionSortTrack.outerIndex
+                (Just model.selectionSortTrack.compareIndex)
+                (Just model.selectionSortTrack.minIndex)
 
             , renderComparison
                 -- InsertionSort
                 model.insertionSortTrack.array
                 "Insertion Sort"
                 model.insertionSortTrack.sorted
-                model.insertionSortTrack.index
+                model.insertionSortTrack.outerIndex
+                (Just model.insertionSortTrack.compareIndex)
+                Nothing
             ]
 
         , div
+            -- Styling for buttons
             [ style "text-align" "center"
             , style "margin-top" "20px"
             ]
+            -- Buttons to start and reset sorting
             [ button [ onClick Start ] [ text "Start" ]
             , button [ onClick Reset ] [ text "Reset" ]
             ]
         ]
-
--- Convert Bool to String
-stringFromBool : Bool -> String
-stringFromBool value =
-    if value then
-        "True"
-    else
-        "False"

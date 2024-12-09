@@ -2,50 +2,72 @@ module SelectionSort exposing (selectionSortStep)
 
 import Array exposing (Array)
 
-{- SelectionSort: swaps current element with the smallest element in the array
-   until min index and current index cross (end of array) -}
+-- Access to structs needed for program
+import Structs exposing (Model, SortingTrack)
 
-selectionSortStep : Array Int -> Int -> (Array Int, Bool)
-selectionSortStep array index =
+{-  Move through the array with outerIndex
+    For each outerIndex, find the smallest element in the rest of array
+    When compareIndex reaches the end of the array, swap outerIndex with compareIndex
+    Increment outerIndex and repeat until the end of the array is hit
+-}
+
+selectionSortStep : SortingTrack -> SortingTrack
+selectionSortStep track =
     let
-        -- Find the index of the smallest element from `index` onward
-        findMinIndex : Int -> Int -> Int -> Int
-        findMinIndex currentMinIndex currentIndex arrayLength =
-            -- Minimum index has been found
-            if currentIndex >= arrayLength then
-                currentMinIndex
-            else
-                -- Use case to avoid issues with comparing Maybe Int
-                case (Array.get currentIndex array, Array.get currentMinIndex array) of
-                    (Just currentValue, Just minValue) ->
-                        -- update currentMinIndex to currentIndex and keep looking
-                        if currentValue < minValue then
-                            findMinIndex currentIndex (currentIndex + 1) arrayLength
-                        -- keep looking for next min value
-                        else
-                            findMinIndex currentMinIndex (currentIndex + 1) arrayLength
-                    -- Default case
-                    _ ->
-                        currentMinIndex
-
-        -- Call findMinIndex for the unsorted portion of the array
-        minIndex =
-            findMinIndex index (index + 1) (Array.length array)
-
-        swappedArray =
-            case (Array.get index array, Array.get minIndex array) of
-                (Just currentValue, Just minValue) ->
-                    -- sets index to minValue and minIndex to currentValue
-                    Array.set index minValue (Array.set minIndex currentValue array)
-
-                -- Default Case
-                _ ->
-                    array
-
-        -- See if a swap occured
-        didSwap =
-            index /= minIndex
-
-    -- Package new array and didSwap for Main.elm to handle
+        arr = track.array
+        o = track.outerIndex
+        c = track.compareIndex
+        m = track.minIndex
+        len = Array.length arr
     in
-    (swappedArray, didSwap)
+    -- Array already sorted or end of array reached
+    if track.sorted || o >= len then
+        { track
+            | sorted = True
+        }
+    else
+        if c < len then
+            -- Compare element at c with element at m
+            case (Array.get c arr, Array.get m arr) of
+                (Just cv, Just mv) ->
+                    if cv < mv then
+                        -- Found a new minimum
+                        { track
+                            | compareIndex = c + 1, minIndex = c
+                        }
+                    else
+                        -- Current element isn't smaller than min
+                        { track
+                        | compareIndex = c + 1
+                        }
+
+                -- Default constructor
+                _ ->
+                    track
+
+        else
+            -- CompareIndex reached end so swap minIndex with outerIndex
+            case (Array.get o arr, Array.get m arr) of
+                (Just ov, Just mv) ->
+                    let
+                        -- Update array to reflect swap
+                        newArray =
+                            if m /= o then
+                                Array.set o mv (Array.set m ov arr)
+                            else
+                                arr
+
+                        didSwap = (m /= o)
+                    in
+                    -- Update track to reflect new array
+                    { track
+                        | array = newArray
+                        , outerIndex = o + 1
+                        , compareIndex = o + 2
+                        , minIndex = o + 1
+                        , didSwap = didSwap
+                    }
+
+                -- Default constructor
+                _ ->
+                    track

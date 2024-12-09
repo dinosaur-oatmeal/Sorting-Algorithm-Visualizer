@@ -5277,14 +5277,25 @@ var $elm$core$Array$fromList = function (list) {
 		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
 	}
 };
+var $author$project$Main$initialTrack = function (arr) {
+	return {array: arr, compareIndex: 1, didSwap: false, minIndex: 0, outerIndex: 0, sorted: false};
+};
 var $author$project$Main$initialModel = function () {
 	var initialArray = $elm$core$Array$fromList(
 		_List_fromArray(
 			[9, 5, 3, 1, 6, 7, 10, 2, 4, 8]));
-	var initialTrack = {array: initialArray, didSwap: false, index: 0, sorted: false};
-	return {bubbleSortTrack: initialTrack, insertionSortTrack: initialTrack, running: false, selectionSortTrack: initialTrack};
+	return {
+		bubbleSortTrack: $author$project$Main$initialTrack(initialArray),
+		insertionSortTrack: $author$project$Main$initialTrack(initialArray),
+		running: false,
+		selectionSortTrack: function () {
+			var track = $author$project$Main$initialTrack(initialArray);
+			return _Utils_update(
+				track,
+				{minIndex: track.outerIndex});
+		}()
+	};
 }();
-var $author$project$Main$init = $author$project$Main$initialModel;
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$Tick = function (a) {
@@ -5752,6 +5763,11 @@ var $elm$core$Array$get = F2(
 			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
 			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
+var $elm$core$Array$length = function (_v0) {
+	var len = _v0.a;
+	return len;
+};
+var $elm$core$Basics$not = _Basics_not;
 var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
 var $elm$core$Array$setHelp = F4(
 	function (shift, index, value, tree) {
@@ -5795,158 +5811,136 @@ var $elm$core$Array$set = F3(
 			A4($elm$core$Array$setHelp, startShift, index, value, tree),
 			tail));
 	});
-var $author$project$BubbleSort$bubbleSortStep = F2(
-	function (array, index) {
-		var _v0 = _Utils_Tuple2(
-			A2($elm$core$Array$get, index, array),
-			A2($elm$core$Array$get, index + 1, array));
-		if ((_v0.a.$ === 'Just') && (_v0.b.$ === 'Just')) {
-			var currentValue = _v0.a.a;
-			var nextValue = _v0.b.a;
-			if (_Utils_cmp(currentValue, nextValue) > 0) {
-				var swappedArray = A3(
-					$elm$core$Array$set,
-					index,
-					nextValue,
-					A3($elm$core$Array$set, index + 1, currentValue, array));
-				return _Utils_Tuple2(swappedArray, true);
+var $author$project$BubbleSort$bubbleSortStep = function (track) {
+	var currentIndex = track.outerIndex;
+	var nextIndex = currentIndex + 1;
+	var arr = track.array;
+	var len = $elm$core$Array$length(arr);
+	if (track.sorted) {
+		return track;
+	} else {
+		if (_Utils_cmp(nextIndex, len) < 0) {
+			var _v0 = _Utils_Tuple2(
+				A2($elm$core$Array$get, currentIndex, arr),
+				A2($elm$core$Array$get, nextIndex, arr));
+			if ((_v0.a.$ === 'Just') && (_v0.b.$ === 'Just')) {
+				var cv = _v0.a.a;
+				var nv = _v0.b.a;
+				if (_Utils_cmp(cv, nv) > 0) {
+					var swappedArray = A3(
+						$elm$core$Array$set,
+						currentIndex,
+						nv,
+						A3($elm$core$Array$set, nextIndex, cv, arr));
+					return _Utils_update(
+						track,
+						{array: swappedArray, compareIndex: nextIndex, didSwap: true, outerIndex: currentIndex + 1});
+				} else {
+					return _Utils_update(
+						track,
+						{compareIndex: nextIndex, didSwap: track.didSwap, outerIndex: currentIndex + 1});
+				}
 			} else {
-				return _Utils_Tuple2(array, false);
+				return track;
 			}
 		} else {
-			return _Utils_Tuple2(array, false);
-		}
-	});
-var $author$project$InsertionSort$insertionSortStep = F2(
-	function (array, index) {
-		var moveBackward = F2(
-			function (currentArray, currentIndex) {
-				moveBackward:
-				while (true) {
-					if (currentIndex <= 0) {
-						return _Utils_Tuple2(currentArray, false);
-					} else {
-						var _v0 = _Utils_Tuple2(
-							A2($elm$core$Array$get, currentIndex, currentArray),
-							A2($elm$core$Array$get, currentIndex - 1, currentArray));
-						if ((_v0.a.$ === 'Just') && (_v0.b.$ === 'Just')) {
-							var currentValue = _v0.a.a;
-							var previousValue = _v0.b.a;
-							if (_Utils_cmp(currentValue, previousValue) < 0) {
-								var swappedArray = A3(
-									$elm$core$Array$set,
-									currentIndex,
-									previousValue,
-									A3($elm$core$Array$set, currentIndex - 1, currentValue, currentArray));
-								var $temp$currentArray = swappedArray,
-									$temp$currentIndex = currentIndex - 1;
-								currentArray = $temp$currentArray;
-								currentIndex = $temp$currentIndex;
-								continue moveBackward;
-							} else {
-								return _Utils_Tuple2(currentArray, false);
-							}
-						} else {
-							return _Utils_Tuple2(currentArray, false);
-						}
-					}
-				}
-			});
-		var _v1 = A2(moveBackward, array, index);
-		var newArray = _v1.a;
-		var didSwap = _v1.b;
-		return _Utils_Tuple2(newArray, didSwap);
-	});
-var $elm$core$Array$length = function (_v0) {
-	var len = _v0.a;
-	return len;
-};
-var $elm$core$Basics$neq = _Utils_notEqual;
-var $author$project$SelectionSort$selectionSortStep = F2(
-	function (array, index) {
-		var findMinIndex = F3(
-			function (currentMinIndex, currentIndex, arrayLength) {
-				findMinIndex:
-				while (true) {
-					if (_Utils_cmp(currentIndex, arrayLength) > -1) {
-						return currentMinIndex;
-					} else {
-						var _v0 = _Utils_Tuple2(
-							A2($elm$core$Array$get, currentIndex, array),
-							A2($elm$core$Array$get, currentMinIndex, array));
-						if ((_v0.a.$ === 'Just') && (_v0.b.$ === 'Just')) {
-							var currentValue = _v0.a.a;
-							var minValue = _v0.b.a;
-							if (_Utils_cmp(currentValue, minValue) < 0) {
-								var $temp$currentMinIndex = currentIndex,
-									$temp$currentIndex = currentIndex + 1,
-									$temp$arrayLength = arrayLength;
-								currentMinIndex = $temp$currentMinIndex;
-								currentIndex = $temp$currentIndex;
-								arrayLength = $temp$arrayLength;
-								continue findMinIndex;
-							} else {
-								var $temp$currentMinIndex = currentMinIndex,
-									$temp$currentIndex = currentIndex + 1,
-									$temp$arrayLength = arrayLength;
-								currentMinIndex = $temp$currentMinIndex;
-								currentIndex = $temp$currentIndex;
-								arrayLength = $temp$arrayLength;
-								continue findMinIndex;
-							}
-						} else {
-							return currentMinIndex;
-						}
-					}
-				}
-			});
-		var minIndex = A3(
-			findMinIndex,
-			index,
-			index + 1,
-			$elm$core$Array$length(array));
-		var swappedArray = function () {
-			var _v1 = _Utils_Tuple2(
-				A2($elm$core$Array$get, index, array),
-				A2($elm$core$Array$get, minIndex, array));
-			if ((_v1.a.$ === 'Just') && (_v1.b.$ === 'Just')) {
-				var currentValue = _v1.a.a;
-				var minValue = _v1.b.a;
-				return A3(
-					$elm$core$Array$set,
-					index,
-					minValue,
-					A3($elm$core$Array$set, minIndex, currentValue, array));
-			} else {
-				return array;
-			}
-		}();
-		var didSwap = !_Utils_eq(index, minIndex);
-		return _Utils_Tuple2(swappedArray, didSwap);
-	});
-var $elm$core$Basics$not = _Basics_not;
-var $author$project$Main$updateSortingTrack = F2(
-	function (track, sortStep) {
-		if (track.sorted) {
-			return track;
-		} else {
-			var nextIndex = (_Utils_cmp(
-				track.index,
-				$elm$core$Array$length(track.array) - 1) > -1) ? 0 : (track.index + 1);
-			var _v0 = A2(sortStep, track.array, track.index);
-			var newArray = _v0.a;
-			var swapOccurred = _v0.b;
-			var isSorted = (_Utils_cmp(
-				track.index,
-				$elm$core$Array$length(track.array) - 1) > -1) ? (!(track.didSwap || swapOccurred)) : false;
-			var resetDidSwap = (_Utils_cmp(
-				track.index,
-				$elm$core$Array$length(track.array) - 1) > -1) ? false : (track.didSwap || swapOccurred);
+			var isSorted = !track.didSwap;
 			return _Utils_update(
 				track,
-				{array: newArray, didSwap: resetDidSwap, index: nextIndex, sorted: isSorted});
+				{compareIndex: 1, didSwap: false, outerIndex: 0, sorted: isSorted});
 		}
-	});
+	}
+};
+var $author$project$InsertionSort$insertionSortStep = function (track) {
+	var o = track.outerIndex;
+	var c = track.compareIndex;
+	var arr = track.array;
+	var len = $elm$core$Array$length(arr);
+	if (track.sorted || (_Utils_cmp(o, len) > -1)) {
+		return _Utils_update(
+			track,
+			{sorted: true});
+	} else {
+		if (c <= 0) {
+			return _Utils_update(
+				track,
+				{compareIndex: o + 1, didSwap: false, outerIndex: o + 1});
+		} else {
+			var _v0 = _Utils_Tuple2(
+				A2($elm$core$Array$get, c, arr),
+				A2($elm$core$Array$get, c - 1, arr));
+			if ((_v0.a.$ === 'Just') && (_v0.b.$ === 'Just')) {
+				var cv = _v0.a.a;
+				var pv = _v0.b.a;
+				if (_Utils_cmp(cv, pv) < 0) {
+					var swappedArray = A3(
+						$elm$core$Array$set,
+						c - 1,
+						cv,
+						A3($elm$core$Array$set, c, pv, arr));
+					return _Utils_update(
+						track,
+						{array: swappedArray, compareIndex: c - 1, didSwap: true});
+				} else {
+					return _Utils_update(
+						track,
+						{compareIndex: o + 1, didSwap: false, outerIndex: o + 1});
+				}
+			} else {
+				return track;
+			}
+		}
+	}
+};
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $author$project$SelectionSort$selectionSortStep = function (track) {
+	var o = track.outerIndex;
+	var m = track.minIndex;
+	var c = track.compareIndex;
+	var arr = track.array;
+	var len = $elm$core$Array$length(arr);
+	if (track.sorted || (_Utils_cmp(o, len) > -1)) {
+		return _Utils_update(
+			track,
+			{sorted: true});
+	} else {
+		if (_Utils_cmp(c, len) < 0) {
+			var _v0 = _Utils_Tuple2(
+				A2($elm$core$Array$get, c, arr),
+				A2($elm$core$Array$get, m, arr));
+			if ((_v0.a.$ === 'Just') && (_v0.b.$ === 'Just')) {
+				var cv = _v0.a.a;
+				var mv = _v0.b.a;
+				return (_Utils_cmp(cv, mv) < 0) ? _Utils_update(
+					track,
+					{compareIndex: c + 1, minIndex: c}) : _Utils_update(
+					track,
+					{compareIndex: c + 1});
+			} else {
+				return track;
+			}
+		} else {
+			var _v1 = _Utils_Tuple2(
+				A2($elm$core$Array$get, o, arr),
+				A2($elm$core$Array$get, m, arr));
+			if ((_v1.a.$ === 'Just') && (_v1.b.$ === 'Just')) {
+				var ov = _v1.a.a;
+				var mv = _v1.b.a;
+				var newArray = (!_Utils_eq(m, o)) ? A3(
+					$elm$core$Array$set,
+					o,
+					mv,
+					A3($elm$core$Array$set, m, ov, arr)) : arr;
+				var didSwap = !_Utils_eq(m, o);
+				return _Utils_update(
+					track,
+					{array: newArray, compareIndex: o + 2, didSwap: didSwap, minIndex: o + 1, outerIndex: o + 1});
+			} else {
+				return track;
+			}
+		}
+	}
+};
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -5955,7 +5949,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							bubbleSortTrack: A2($author$project$Main$updateSortingTrack, model.bubbleSortTrack, $author$project$BubbleSort$bubbleSortStep)
+							bubbleSortTrack: $author$project$BubbleSort$bubbleSortStep(model.bubbleSortTrack)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'StepSelectionSort':
@@ -5963,7 +5957,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							selectionSortTrack: A2($author$project$Main$updateSortingTrack, model.selectionSortTrack, $author$project$SelectionSort$selectionSortStep)
+							selectionSortTrack: $author$project$SelectionSort$selectionSortStep(model.selectionSortTrack)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'StepInsertionSort':
@@ -5971,7 +5965,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							insertionSortTrack: A2($author$project$Main$updateSortingTrack, model.insertionSortTrack, $author$project$InsertionSort$insertionSortStep)
+							insertionSortTrack: $author$project$InsertionSort$insertionSortStep(model.insertionSortTrack)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Start':
@@ -5987,9 +5981,9 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							bubbleSortTrack: A2($author$project$Main$updateSortingTrack, model.bubbleSortTrack, $author$project$BubbleSort$bubbleSortStep),
-							insertionSortTrack: A2($author$project$Main$updateSortingTrack, model.insertionSortTrack, $author$project$InsertionSort$insertionSortStep),
-							selectionSortTrack: A2($author$project$Main$updateSortingTrack, model.selectionSortTrack, $author$project$SelectionSort$selectionSortStep)
+							bubbleSortTrack: $author$project$BubbleSort$bubbleSortStep(model.bubbleSortTrack),
+							insertionSortTrack: $author$project$InsertionSort$insertionSortStep(model.insertionSortTrack),
+							selectionSortTrack: $author$project$SelectionSort$selectionSortStep(model.selectionSortTrack)
 						}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -6017,10 +6011,26 @@ var $elm$html$Html$Events$onClick = function (msg) {
 };
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Visualization$renderBar = F4(
-	function (sorted, currentIndex, position, value) {
-		var isCurrent = _Utils_eq(position, currentIndex);
-		var barColor = sorted ? '#4CAF50' : (isCurrent ? '#FF5722' : '#2196F3');
+var $author$project$Visualization$renderBar = F6(
+	function (sorted, outerIndex, maybeCompareIndex, maybeMinIndex, position, value) {
+		var isOuter = _Utils_eq(position, outerIndex);
+		var isMin = function () {
+			if (maybeMinIndex.$ === 'Just') {
+				var mi = maybeMinIndex.a;
+				return _Utils_eq(position, mi);
+			} else {
+				return false;
+			}
+		}();
+		var isCompare = function () {
+			if (maybeCompareIndex.$ === 'Just') {
+				var ci = maybeCompareIndex.a;
+				return _Utils_eq(position, ci);
+			} else {
+				return false;
+			}
+		}();
+		var barColor = sorted ? '#4CAF50' : (isOuter ? '#FF5722' : (isMin ? '#FFA500' : (isCompare ? '#FFC107' : '#2196F3')));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -6038,15 +6048,17 @@ var $author$project$Visualization$renderBar = F4(
 	});
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Visualization$renderBarChart = F4(
-	function (array, title, sorted, currentIndex) {
+var $author$project$Visualization$renderComparison = F6(
+	function (array, title, sorted, outerIndex, maybeCompareIndex, maybeMinIndex) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					A2($elm$html$Html$Attributes$style, 'margin', '20px'),
-					A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-					A2($elm$html$Html$Attributes$style, 'flex', '1')
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+					A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+					A2($elm$html$Html$Attributes$style, 'width', '100%'),
+					A2($elm$html$Html$Attributes$style, 'padding', '20px')
 				]),
 			_List_fromArray(
 				[
@@ -6075,24 +6087,8 @@ var $author$project$Visualization$renderBarChart = F4(
 						]),
 					A2(
 						$elm$core$List$indexedMap,
-						A2($author$project$Visualization$renderBar, sorted, currentIndex),
+						A4($author$project$Visualization$renderBar, sorted, outerIndex, maybeCompareIndex, maybeMinIndex),
 						$elm$core$Array$toList(array)))
-				]));
-	});
-var $author$project$Visualization$renderComparison = F4(
-	function (array1, title1, sorted1, currentIndex1) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-					A2($elm$html$Html$Attributes$style, 'justify-content', 'space-around'),
-					A2($elm$html$Html$Attributes$style, 'width', '100%'),
-					A2($elm$html$Html$Attributes$style, 'padding', '20px')
-				]),
-			_List_fromArray(
-				[
-					A4($author$project$Visualization$renderBarChart, array1, title1, sorted1, currentIndex1)
 				]));
 	});
 var $author$project$Main$view = function (model) {
@@ -6114,9 +6110,30 @@ var $author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						A4($author$project$Visualization$renderComparison, model.bubbleSortTrack.array, 'Bubble Sort', model.bubbleSortTrack.sorted, model.bubbleSortTrack.index),
-						A4($author$project$Visualization$renderComparison, model.selectionSortTrack.array, 'Selection Sort', model.selectionSortTrack.sorted, model.selectionSortTrack.index),
-						A4($author$project$Visualization$renderComparison, model.insertionSortTrack.array, 'Insertion Sort', model.insertionSortTrack.sorted, model.insertionSortTrack.index)
+						A6(
+						$author$project$Visualization$renderComparison,
+						model.bubbleSortTrack.array,
+						'Bubble Sort',
+						model.bubbleSortTrack.sorted,
+						model.bubbleSortTrack.outerIndex,
+						$elm$core$Maybe$Just(model.bubbleSortTrack.compareIndex),
+						$elm$core$Maybe$Nothing),
+						A6(
+						$author$project$Visualization$renderComparison,
+						model.selectionSortTrack.array,
+						'Selection Sort',
+						model.selectionSortTrack.sorted,
+						model.selectionSortTrack.outerIndex,
+						$elm$core$Maybe$Just(model.selectionSortTrack.compareIndex),
+						$elm$core$Maybe$Just(model.selectionSortTrack.minIndex)),
+						A6(
+						$author$project$Visualization$renderComparison,
+						model.insertionSortTrack.array,
+						'Insertion Sort',
+						model.insertionSortTrack.sorted,
+						model.insertionSortTrack.outerIndex,
+						$elm$core$Maybe$Just(model.insertionSortTrack.compareIndex),
+						$elm$core$Maybe$Nothing)
 					])),
 				A2(
 				$elm$html$Html$div,
@@ -6153,7 +6170,7 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{
 		init: function (_v0) {
-			return _Utils_Tuple2($author$project$Main$init, $elm$core$Platform$Cmd$none);
+			return _Utils_Tuple2($author$project$Main$initialModel, $elm$core$Platform$Cmd$none);
 		},
 		subscriptions: $author$project$Main$subscriptions,
 		update: $author$project$Main$update,
