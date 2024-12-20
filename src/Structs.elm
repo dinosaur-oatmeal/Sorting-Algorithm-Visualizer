@@ -14,7 +14,7 @@ type alias SortingTrack =
     -- Loops with an outer pass (Bubble/Insertion/Selection)
     , outerIndex : Int
     -- Position of element that's being compared
-    , compareIndex : Int
+    , currentIndex : Int
     -- Minimum index in part of array unsorted (Selection)
     , minIndex : Int
     -- Tells us if the array is sorted

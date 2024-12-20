@@ -26,7 +26,7 @@ initialTrack : Array Int -> SortingTrack
 initialTrack arr =
     { array = arr
     , outerIndex = 0
-    , compareIndex = 1
+    , currentIndex = 1
     , minIndex = 0
     , sorted = False
     , didSwap = False
@@ -104,6 +104,7 @@ update msg model =
         Start ->
             ( { model | running = True }, Cmd.none )
 
+        -- Reset to initialModel and set set running state to False
         Reset ->
             ( initialModel, Cmd.none )
 
@@ -153,7 +154,7 @@ view model =
                 "Bubble Sort"
                 model.bubbleSortTrack.sorted
                 model.bubbleSortTrack.outerIndex
-                (Just model.bubbleSortTrack.compareIndex)
+                (Just model.bubbleSortTrack.currentIndex)
                 Nothing
 
             , renderComparison
@@ -162,7 +163,7 @@ view model =
                 "Selection Sort"
                 model.selectionSortTrack.sorted
                 model.selectionSortTrack.outerIndex
-                (Just model.selectionSortTrack.compareIndex)
+                (Just model.selectionSortTrack.currentIndex)
                 (Just model.selectionSortTrack.minIndex)
 
             , renderComparison
@@ -171,7 +172,7 @@ view model =
                 "Insertion Sort"
                 model.insertionSortTrack.sorted
                 model.insertionSortTrack.outerIndex
-                (Just model.insertionSortTrack.compareIndex)
+                (Just model.insertionSortTrack.currentIndex)
                 Nothing
             ]
 

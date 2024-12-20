@@ -16,36 +16,36 @@ bubbleSortStep track =
         arr = track.array
         currentIndex = track.outerIndex
         nextIndex = currentIndex + 1
-        len = Array.length arr
+        length = Array.length arr
     in
 
     -- Array already sorted
     if track.sorted then
         track
     else
-        if nextIndex < len then
+        if nextIndex < length then
             -- Compare current and next element values
             case (Array.get currentIndex arr, Array.get nextIndex arr) of
-                (Just cv, Just nv) ->
-                    if cv > nv then
+                (Just currentValue, Just nextValue) ->
+                    if currentValue > nextValue then
                         let
-                            -- Swap elements and create new array
+                            -- Swap elements in array
                             swappedArray =
-                                Array.set currentIndex nv (Array.set nextIndex cv arr)
+                                Array.set currentIndex nextValue (Array.set nextIndex currentValue arr)
                         in
                         -- Update track to reflect new array
                         { track
                             | array = swappedArray
                             , outerIndex = currentIndex + 1
                             , didSwap = True
-                            , compareIndex = nextIndex
+                            , currentIndex = nextIndex
                         }
                     -- Go to next element in array
                     else
                         { track
                             | outerIndex = currentIndex + 1
                             , didSwap = track.didSwap
-                            , compareIndex = nextIndex
+                            , currentIndex = nextIndex
                         }
 
                 -- Default constructor
@@ -55,11 +55,13 @@ bubbleSortStep track =
         -- Go to next pass and update to see if the array is sorted
         else
             let
+                -- Determine if array is sorted based on swaps
                 isSorted = not track.didSwap
             in
+            -- Update track to reflect sorted state
             { track
                 | outerIndex = 0
-                , compareIndex = 1
+                , currentIndex = 1
                 , sorted = isSorted
                 , didSwap = False
             }

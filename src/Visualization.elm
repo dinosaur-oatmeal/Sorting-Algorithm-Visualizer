@@ -17,13 +17,13 @@ renderComparison :
     -> Bool 
     -- outerIndex for nested loops
     -> Int
-    -- compareIndex to see sorting specifics
+    -- currentIndex to see sorting specifics
     -> Maybe Int
     -- minIndex for SelectionSort
     -> Maybe Int
     -> Html msg
 
-renderComparison array title sorted outerIndex maybeCompareIndex maybeMinIndex =
+renderComparison array title sorted outerIndex maybecurrentIndex maybeMinIndex =
     div 
         -- Styling for each chart shown
         [ style "display" "flex"
@@ -47,7 +47,7 @@ renderComparison array title sorted outerIndex maybeCompareIndex maybeMinIndex =
             , style "padding" "10px"
             ]
             -- Convert array to list to map to bars rendered on the screen
-            (Array.toList array |> List.indexedMap (renderBar sorted outerIndex maybeCompareIndex maybeMinIndex))
+            (Array.toList array |> List.indexedMap (renderBar sorted outerIndex maybecurrentIndex maybeMinIndex))
         ]
 
 
@@ -56,7 +56,7 @@ renderBar :
     Bool 
     -- outerIndex for nested loops
     -> Int 
-    -- compareIndex to see sorting specifics
+    -- currentIndex to see sorting specifics
     -> Maybe Int 
     -- minIndex for SelectionSort
     -> Maybe Int 
@@ -66,11 +66,11 @@ renderBar :
     -> Int 
     -> Html msg
 
-renderBar sorted outerIndex maybeCompareIndex maybeMinIndex position value =
+renderBar sorted outerIndex maybecurrentIndex maybeMinIndex position value =
     let
         isOuter = position == outerIndex
         isCompare = 
-            case maybeCompareIndex of
+            case maybecurrentIndex of
                 Just ci -> position == ci
                 Nothing -> False
 
@@ -87,7 +87,7 @@ renderBar sorted outerIndex maybeCompareIndex maybeMinIndex position value =
             else if isMin then
                 "#FFA500" -- Orange for minIndex in selection sort
             else if isCompare then
-                "#FFC107" -- Yellow for compareIndex
+                "#FFC107" -- Yellow for currentIndex
             else
                 "#2196F3" -- Blue otherwise
     in

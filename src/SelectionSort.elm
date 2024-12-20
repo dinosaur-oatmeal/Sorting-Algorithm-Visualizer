@@ -7,7 +7,7 @@ import Structs exposing (Model, SortingTrack)
 
 {-  Move through the array with outerIndex
     For each outerIndex, find the smallest element in the rest of array
-    When compareIndex reaches the end of the array, swap outerIndex with compareIndex
+    When currentIndex reaches the end of the array, swap outerIndex with currentIndex
     Increment outerIndex and repeat until the end of the array is hit
 -}
 
@@ -15,30 +15,30 @@ selectionSortStep : SortingTrack -> SortingTrack
 selectionSortStep track =
     let
         arr = track.array
-        o = track.outerIndex
-        c = track.compareIndex
-        m = track.minIndex
-        len = Array.length arr
+        outer = track.outerIndex
+        current = track.currentIndex
+        minimum = track.minIndex
+        length = Array.length arr
     in
     -- Array already sorted or end of array reached
-    if track.sorted || o >= len then
+    if track.sorted || outer >= length then
         { track
             | sorted = True
         }
     else
-        if c < len then
-            -- Compare element at c with element at m
-            case (Array.get c arr, Array.get m arr) of
-                (Just cv, Just mv) ->
-                    if cv < mv then
-                        -- Found a new minimum
+        if current < length then
+            -- Compare element at current with element at minimum
+            case (Array.get current arr, Array.get minimum arr) of
+                (Just currentValue, Just minimumValue) ->
+                    if currentValue < minimumValue then
+                        -- Found a new minimum, so set minIndex to current and increase currentIndex
                         { track
-                            | compareIndex = c + 1, minIndex = c
+                            | currentIndex = current + 1, minIndex = current
                         }
                     else
-                        -- Current element isn't smaller than min
+                        -- Current element isn't smaller than min, so increase currentIndex
                         { track
-                        | compareIndex = c + 1
+                        | currentIndex = current + 1
                         }
 
                 -- Default constructor
@@ -46,25 +46,27 @@ selectionSortStep track =
                     track
 
         else
-            -- CompareIndex reached end so swap minIndex with outerIndex
-            case (Array.get o arr, Array.get m arr) of
-                (Just ov, Just mv) ->
+            -- currentIndex reached end of array so swap minIndex with outerIndex
+            case (Array.get outer arr, Array.get minimum arr) of
+                (Just outerValue, Just minimumValue) ->
                     let
-                        -- Update array to reflect swap
                         newArray =
-                            if m /= o then
-                                Array.set o mv (Array.set m ov arr)
+                            -- Swap outerValue with minimumValue if smaller
+                            if minimum /= outer then
+                                Array.set outer minimumValue (Array.set minimum outerValue arr)
+                            -- Return array if not smaller
                             else
                                 arr
 
-                        didSwap = (m /= o)
+                        -- Test didSwap boolean accordingly
+                        didSwap = (minimum /= outer)
                     in
                     -- Update track to reflect new array
                     { track
                         | array = newArray
-                        , outerIndex = o + 1
-                        , compareIndex = o + 2
-                        , minIndex = o + 1
+                        , outerIndex = outer + 1
+                        , currentIndex = outer + 2
+                        , minIndex = outer + 1
                         , didSwap = didSwap
                     }
 
