@@ -2,8 +2,8 @@ module BubbleSort exposing (bubbleSortStep)
 
 import Array exposing (Array)
 
--- Access to structs needed for program
-import Structs exposing (Model, SortingTrack)
+-- Access to struct needed for program
+import Structs exposing (SortingTrack)
 
 {-  Each step compares array[outerIndex] to array[outerIndex + 1]
     If array[outerIndex] > array[outerIndex + 1], swap them

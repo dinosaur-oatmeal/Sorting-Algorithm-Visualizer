@@ -5278,7 +5278,7 @@ var $elm$core$Array$fromList = function (list) {
 	}
 };
 var $author$project$Main$initialTrack = function (arr) {
-	return {array: arr, currentIndex: 1, didSwap: false, minIndex: 0, outerIndex: 0, sorted: false};
+	return {array: arr, currentIndex: 1, currentStep: 0, didSwap: false, minIndex: 0, outerIndex: 0, sorted: false};
 };
 var $author$project$Main$initialModel = function () {
 	var initialArray = $elm$core$Array$fromList(
@@ -5287,6 +5287,7 @@ var $author$project$Main$initialModel = function () {
 	return {
 		bubbleSortTrack: $author$project$Main$initialTrack(initialArray),
 		insertionSortTrack: $author$project$Main$initialTrack(initialArray),
+		mergeSortTrack: $author$project$Main$initialTrack(initialArray),
 		running: false,
 		selectionSortTrack: function () {
 			var track = $author$project$Main$initialTrack(initialArray);
@@ -5892,6 +5893,512 @@ var $author$project$InsertionSort$insertionSortStep = function (track) {
 		}
 	}
 };
+var $elm$core$Elm$JsArray$appendN = _JsArray_appendN;
+var $elm$core$Elm$JsArray$slice = _JsArray_slice;
+var $elm$core$Array$appendHelpBuilder = F2(
+	function (tail, builder) {
+		var tailLen = $elm$core$Elm$JsArray$length(tail);
+		var notAppended = ($elm$core$Array$branchFactor - $elm$core$Elm$JsArray$length(builder.tail)) - tailLen;
+		var appended = A3($elm$core$Elm$JsArray$appendN, $elm$core$Array$branchFactor, builder.tail, tail);
+		return (notAppended < 0) ? {
+			nodeList: A2(
+				$elm$core$List$cons,
+				$elm$core$Array$Leaf(appended),
+				builder.nodeList),
+			nodeListSize: builder.nodeListSize + 1,
+			tail: A3($elm$core$Elm$JsArray$slice, notAppended, tailLen, tail)
+		} : ((!notAppended) ? {
+			nodeList: A2(
+				$elm$core$List$cons,
+				$elm$core$Array$Leaf(appended),
+				builder.nodeList),
+			nodeListSize: builder.nodeListSize + 1,
+			tail: $elm$core$Elm$JsArray$empty
+		} : {nodeList: builder.nodeList, nodeListSize: builder.nodeListSize, tail: appended});
+	});
+var $elm$core$Elm$JsArray$push = _JsArray_push;
+var $elm$core$Elm$JsArray$singleton = _JsArray_singleton;
+var $elm$core$Array$insertTailInTree = F4(
+	function (shift, index, tail, tree) {
+		var pos = $elm$core$Array$bitMask & (index >>> shift);
+		if (_Utils_cmp(
+			pos,
+			$elm$core$Elm$JsArray$length(tree)) > -1) {
+			if (shift === 5) {
+				return A2(
+					$elm$core$Elm$JsArray$push,
+					$elm$core$Array$Leaf(tail),
+					tree);
+			} else {
+				var newSub = $elm$core$Array$SubTree(
+					A4($elm$core$Array$insertTailInTree, shift - $elm$core$Array$shiftStep, index, tail, $elm$core$Elm$JsArray$empty));
+				return A2($elm$core$Elm$JsArray$push, newSub, tree);
+			}
+		} else {
+			var value = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (value.$ === 'SubTree') {
+				var subTree = value.a;
+				var newSub = $elm$core$Array$SubTree(
+					A4($elm$core$Array$insertTailInTree, shift - $elm$core$Array$shiftStep, index, tail, subTree));
+				return A3($elm$core$Elm$JsArray$unsafeSet, pos, newSub, tree);
+			} else {
+				var newSub = $elm$core$Array$SubTree(
+					A4(
+						$elm$core$Array$insertTailInTree,
+						shift - $elm$core$Array$shiftStep,
+						index,
+						tail,
+						$elm$core$Elm$JsArray$singleton(value)));
+				return A3($elm$core$Elm$JsArray$unsafeSet, pos, newSub, tree);
+			}
+		}
+	});
+var $elm$core$Array$unsafeReplaceTail = F2(
+	function (newTail, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var originalTailLen = $elm$core$Elm$JsArray$length(tail);
+		var newTailLen = $elm$core$Elm$JsArray$length(newTail);
+		var newArrayLen = len + (newTailLen - originalTailLen);
+		if (_Utils_eq(newTailLen, $elm$core$Array$branchFactor)) {
+			var overflow = _Utils_cmp(newArrayLen >>> $elm$core$Array$shiftStep, 1 << startShift) > 0;
+			if (overflow) {
+				var newShift = startShift + $elm$core$Array$shiftStep;
+				var newTree = A4(
+					$elm$core$Array$insertTailInTree,
+					newShift,
+					len,
+					newTail,
+					$elm$core$Elm$JsArray$singleton(
+						$elm$core$Array$SubTree(tree)));
+				return A4($elm$core$Array$Array_elm_builtin, newArrayLen, newShift, newTree, $elm$core$Elm$JsArray$empty);
+			} else {
+				return A4(
+					$elm$core$Array$Array_elm_builtin,
+					newArrayLen,
+					startShift,
+					A4($elm$core$Array$insertTailInTree, startShift, len, newTail, tree),
+					$elm$core$Elm$JsArray$empty);
+			}
+		} else {
+			return A4($elm$core$Array$Array_elm_builtin, newArrayLen, startShift, tree, newTail);
+		}
+	});
+var $elm$core$Array$appendHelpTree = F2(
+	function (toAppend, array) {
+		var len = array.a;
+		var tree = array.c;
+		var tail = array.d;
+		var itemsToAppend = $elm$core$Elm$JsArray$length(toAppend);
+		var notAppended = ($elm$core$Array$branchFactor - $elm$core$Elm$JsArray$length(tail)) - itemsToAppend;
+		var appended = A3($elm$core$Elm$JsArray$appendN, $elm$core$Array$branchFactor, tail, toAppend);
+		var newArray = A2($elm$core$Array$unsafeReplaceTail, appended, array);
+		if (notAppended < 0) {
+			var nextTail = A3($elm$core$Elm$JsArray$slice, notAppended, itemsToAppend, toAppend);
+			return A2($elm$core$Array$unsafeReplaceTail, nextTail, newArray);
+		} else {
+			return newArray;
+		}
+	});
+var $elm$core$Elm$JsArray$foldl = _JsArray_foldl;
+var $elm$core$Array$builderFromArray = function (_v0) {
+	var len = _v0.a;
+	var tree = _v0.c;
+	var tail = _v0.d;
+	var helper = F2(
+		function (node, acc) {
+			if (node.$ === 'SubTree') {
+				var subTree = node.a;
+				return A3($elm$core$Elm$JsArray$foldl, helper, acc, subTree);
+			} else {
+				return A2($elm$core$List$cons, node, acc);
+			}
+		});
+	return {
+		nodeList: A3($elm$core$Elm$JsArray$foldl, helper, _List_Nil, tree),
+		nodeListSize: (len / $elm$core$Array$branchFactor) | 0,
+		tail: tail
+	};
+};
+var $elm$core$Array$append = F2(
+	function (a, _v0) {
+		var aTail = a.d;
+		var bLen = _v0.a;
+		var bTree = _v0.c;
+		var bTail = _v0.d;
+		if (_Utils_cmp(bLen, $elm$core$Array$branchFactor * 4) < 1) {
+			var foldHelper = F2(
+				function (node, array) {
+					if (node.$ === 'SubTree') {
+						var tree = node.a;
+						return A3($elm$core$Elm$JsArray$foldl, foldHelper, array, tree);
+					} else {
+						var leaf = node.a;
+						return A2($elm$core$Array$appendHelpTree, leaf, array);
+					}
+				});
+			return A2(
+				$elm$core$Array$appendHelpTree,
+				bTail,
+				A3($elm$core$Elm$JsArray$foldl, foldHelper, a, bTree));
+		} else {
+			var foldHelper = F2(
+				function (node, builder) {
+					if (node.$ === 'SubTree') {
+						var tree = node.a;
+						return A3($elm$core$Elm$JsArray$foldl, foldHelper, builder, tree);
+					} else {
+						var leaf = node.a;
+						return A2($elm$core$Array$appendHelpBuilder, leaf, builder);
+					}
+				});
+			return A2(
+				$elm$core$Array$builderToArray,
+				true,
+				A2(
+					$elm$core$Array$appendHelpBuilder,
+					bTail,
+					A3(
+						$elm$core$Elm$JsArray$foldl,
+						foldHelper,
+						$elm$core$Array$builderFromArray(a),
+						bTree)));
+		}
+	});
+var $author$project$MergeSort$mergeArrays = F2(
+	function (leftArray, rightArray) {
+		var mergeHelper = F3(
+			function (leftIndex, rightIndex, combinedArray) {
+				mergeHelper:
+				while (true) {
+					var _v0 = _Utils_Tuple2(
+						A2($elm$core$Array$get, leftIndex, leftArray),
+						A2($elm$core$Array$get, rightIndex, rightArray));
+					if (_v0.a.$ === 'Just') {
+						if (_v0.b.$ === 'Just') {
+							var leftValue = _v0.a.a;
+							var rightValue = _v0.b.a;
+							if (_Utils_cmp(leftValue, rightValue) < 0) {
+								var $temp$leftIndex = leftIndex + 1,
+									$temp$rightIndex = rightIndex,
+									$temp$combinedArray = A2(
+									$elm$core$Array$append,
+									combinedArray,
+									$elm$core$Array$fromList(
+										_List_fromArray(
+											[leftValue])));
+								leftIndex = $temp$leftIndex;
+								rightIndex = $temp$rightIndex;
+								combinedArray = $temp$combinedArray;
+								continue mergeHelper;
+							} else {
+								var $temp$leftIndex = leftIndex,
+									$temp$rightIndex = rightIndex + 1,
+									$temp$combinedArray = A2(
+									$elm$core$Array$append,
+									combinedArray,
+									$elm$core$Array$fromList(
+										_List_fromArray(
+											[rightValue])));
+								leftIndex = $temp$leftIndex;
+								rightIndex = $temp$rightIndex;
+								combinedArray = $temp$combinedArray;
+								continue mergeHelper;
+							}
+						} else {
+							var leftValue = _v0.a.a;
+							var _v1 = _v0.b;
+							var $temp$leftIndex = leftIndex + 1,
+								$temp$rightIndex = rightIndex,
+								$temp$combinedArray = A2(
+								$elm$core$Array$append,
+								combinedArray,
+								$elm$core$Array$fromList(
+									_List_fromArray(
+										[leftValue])));
+							leftIndex = $temp$leftIndex;
+							rightIndex = $temp$rightIndex;
+							combinedArray = $temp$combinedArray;
+							continue mergeHelper;
+						}
+					} else {
+						if (_v0.b.$ === 'Just') {
+							var _v2 = _v0.a;
+							var rightValue = _v0.b.a;
+							var $temp$leftIndex = leftIndex,
+								$temp$rightIndex = rightIndex + 1,
+								$temp$combinedArray = A2(
+								$elm$core$Array$append,
+								combinedArray,
+								$elm$core$Array$fromList(
+									_List_fromArray(
+										[rightValue])));
+							leftIndex = $temp$leftIndex;
+							rightIndex = $temp$rightIndex;
+							combinedArray = $temp$combinedArray;
+							continue mergeHelper;
+						} else {
+							var _v3 = _v0.a;
+							var _v4 = _v0.b;
+							return combinedArray;
+						}
+					}
+				}
+			});
+		return A3(mergeHelper, 0, 0, $elm$core$Array$empty);
+	});
+var $elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
+var $elm$core$Array$sliceLeft = F2(
+	function (from, array) {
+		var len = array.a;
+		var tree = array.c;
+		var tail = array.d;
+		if (!from) {
+			return array;
+		} else {
+			if (_Utils_cmp(
+				from,
+				$elm$core$Array$tailIndex(len)) > -1) {
+				return A4(
+					$elm$core$Array$Array_elm_builtin,
+					len - from,
+					$elm$core$Array$shiftStep,
+					$elm$core$Elm$JsArray$empty,
+					A3(
+						$elm$core$Elm$JsArray$slice,
+						from - $elm$core$Array$tailIndex(len),
+						$elm$core$Elm$JsArray$length(tail),
+						tail));
+			} else {
+				var skipNodes = (from / $elm$core$Array$branchFactor) | 0;
+				var helper = F2(
+					function (node, acc) {
+						if (node.$ === 'SubTree') {
+							var subTree = node.a;
+							return A3($elm$core$Elm$JsArray$foldr, helper, acc, subTree);
+						} else {
+							var leaf = node.a;
+							return A2($elm$core$List$cons, leaf, acc);
+						}
+					});
+				var leafNodes = A3(
+					$elm$core$Elm$JsArray$foldr,
+					helper,
+					_List_fromArray(
+						[tail]),
+					tree);
+				var nodesToInsert = A2($elm$core$List$drop, skipNodes, leafNodes);
+				if (!nodesToInsert.b) {
+					return $elm$core$Array$empty;
+				} else {
+					var head = nodesToInsert.a;
+					var rest = nodesToInsert.b;
+					var firstSlice = from - (skipNodes * $elm$core$Array$branchFactor);
+					var initialBuilder = {
+						nodeList: _List_Nil,
+						nodeListSize: 0,
+						tail: A3(
+							$elm$core$Elm$JsArray$slice,
+							firstSlice,
+							$elm$core$Elm$JsArray$length(head),
+							head)
+					};
+					return A2(
+						$elm$core$Array$builderToArray,
+						true,
+						A3($elm$core$List$foldl, $elm$core$Array$appendHelpBuilder, initialBuilder, rest));
+				}
+			}
+		}
+	});
+var $elm$core$Array$fetchNewTail = F4(
+	function (shift, end, treeEnd, tree) {
+		fetchNewTail:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (treeEnd >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var sub = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$end = end,
+					$temp$treeEnd = treeEnd,
+					$temp$tree = sub;
+				shift = $temp$shift;
+				end = $temp$end;
+				treeEnd = $temp$treeEnd;
+				tree = $temp$tree;
+				continue fetchNewTail;
+			} else {
+				var values = _v0.a;
+				return A3($elm$core$Elm$JsArray$slice, 0, $elm$core$Array$bitMask & end, values);
+			}
+		}
+	});
+var $elm$core$Array$hoistTree = F3(
+	function (oldShift, newShift, tree) {
+		hoistTree:
+		while (true) {
+			if ((_Utils_cmp(oldShift, newShift) < 1) || (!$elm$core$Elm$JsArray$length(tree))) {
+				return tree;
+			} else {
+				var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, 0, tree);
+				if (_v0.$ === 'SubTree') {
+					var sub = _v0.a;
+					var $temp$oldShift = oldShift - $elm$core$Array$shiftStep,
+						$temp$newShift = newShift,
+						$temp$tree = sub;
+					oldShift = $temp$oldShift;
+					newShift = $temp$newShift;
+					tree = $temp$tree;
+					continue hoistTree;
+				} else {
+					return tree;
+				}
+			}
+		}
+	});
+var $elm$core$Array$sliceTree = F3(
+	function (shift, endIdx, tree) {
+		var lastPos = $elm$core$Array$bitMask & (endIdx >>> shift);
+		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, lastPos, tree);
+		if (_v0.$ === 'SubTree') {
+			var sub = _v0.a;
+			var newSub = A3($elm$core$Array$sliceTree, shift - $elm$core$Array$shiftStep, endIdx, sub);
+			return (!$elm$core$Elm$JsArray$length(newSub)) ? A3($elm$core$Elm$JsArray$slice, 0, lastPos, tree) : A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				lastPos,
+				$elm$core$Array$SubTree(newSub),
+				A3($elm$core$Elm$JsArray$slice, 0, lastPos + 1, tree));
+		} else {
+			return A3($elm$core$Elm$JsArray$slice, 0, lastPos, tree);
+		}
+	});
+var $elm$core$Array$sliceRight = F2(
+	function (end, array) {
+		var len = array.a;
+		var startShift = array.b;
+		var tree = array.c;
+		var tail = array.d;
+		if (_Utils_eq(end, len)) {
+			return array;
+		} else {
+			if (_Utils_cmp(
+				end,
+				$elm$core$Array$tailIndex(len)) > -1) {
+				return A4(
+					$elm$core$Array$Array_elm_builtin,
+					end,
+					startShift,
+					tree,
+					A3($elm$core$Elm$JsArray$slice, 0, $elm$core$Array$bitMask & end, tail));
+			} else {
+				var endIdx = $elm$core$Array$tailIndex(end);
+				var depth = $elm$core$Basics$floor(
+					A2(
+						$elm$core$Basics$logBase,
+						$elm$core$Array$branchFactor,
+						A2($elm$core$Basics$max, 1, endIdx - 1)));
+				var newShift = A2($elm$core$Basics$max, 5, depth * $elm$core$Array$shiftStep);
+				return A4(
+					$elm$core$Array$Array_elm_builtin,
+					end,
+					newShift,
+					A3(
+						$elm$core$Array$hoistTree,
+						startShift,
+						newShift,
+						A3($elm$core$Array$sliceTree, startShift, endIdx, tree)),
+					A4($elm$core$Array$fetchNewTail, startShift, end, endIdx, tree));
+			}
+		}
+	});
+var $elm$core$Array$translateIndex = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var posIndex = (index < 0) ? (len + index) : index;
+		return (posIndex < 0) ? 0 : ((_Utils_cmp(posIndex, len) > 0) ? len : posIndex);
+	});
+var $elm$core$Array$slice = F3(
+	function (from, to, array) {
+		var correctTo = A2($elm$core$Array$translateIndex, to, array);
+		var correctFrom = A2($elm$core$Array$translateIndex, from, array);
+		return (_Utils_cmp(correctFrom, correctTo) > 0) ? $elm$core$Array$empty : A2(
+			$elm$core$Array$sliceLeft,
+			correctFrom,
+			A2($elm$core$Array$sliceRight, correctTo, array));
+	});
+var $author$project$MergeSort$mergeSortArray = function (array) {
+	var arrayLength = $elm$core$Array$length(array);
+	if (arrayLength <= 1) {
+		return array;
+	} else {
+		var mid = (arrayLength / 2) | 0;
+		var right = A3($elm$core$Array$slice, mid, arrayLength, array);
+		var left = A3($elm$core$Array$slice, 0, mid, array);
+		return A2(
+			$author$project$MergeSort$mergeArrays,
+			$author$project$MergeSort$mergeSortArray(left),
+			$author$project$MergeSort$mergeSortArray(right));
+	}
+};
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$List$sortBy = _List_sortBy;
+var $elm$core$List$sort = function (xs) {
+	return A2($elm$core$List$sortBy, $elm$core$Basics$identity, xs);
+};
+var $author$project$MergeSort$mergeSortHelper = F3(
+	function (array, currentStep, arrayLength) {
+		if (arrayLength <= 1) {
+			return {array: array, currentIndex: 0, nextStep: currentStep, outerIndex: 0, sorted: true};
+		} else {
+			var nextStep = currentStep + 1;
+			var mid = (arrayLength / 2) | 0;
+			var right = A3($elm$core$Array$slice, mid, arrayLength, array);
+			var sortedRight = (currentStep === 1) ? right : $author$project$MergeSort$mergeSortArray(right);
+			var rightIndex = ($elm$core$Array$length(right) > 0) ? mid : (-1);
+			var left = A3($elm$core$Array$slice, 0, mid, array);
+			var leftIndex = ($elm$core$Array$length(left) > 0) ? 0 : (-1);
+			var sortedLeft = (!currentStep) ? left : $author$project$MergeSort$mergeSortArray(left);
+			var mergedArray = A2($author$project$MergeSort$mergeArrays, sortedLeft, sortedRight);
+			var isFullySorted = _Utils_eq(
+				$elm$core$Array$toList(mergedArray),
+				$elm$core$List$sort(
+					$elm$core$Array$toList(array)));
+			return {array: mergedArray, currentIndex: leftIndex, nextStep: nextStep, outerIndex: rightIndex, sorted: isFullySorted};
+		}
+	});
+var $author$project$MergeSort$mergeSortStep = function (track) {
+	var array = track.array;
+	var arrayLength = $elm$core$Array$length(array);
+	var state = A3($author$project$MergeSort$mergeSortHelper, array, track.currentStep, arrayLength);
+	return _Utils_update(
+		track,
+		{array: state.array, currentIndex: state.currentIndex, currentStep: state.nextStep, outerIndex: state.outerIndex, sorted: state.sorted});
+};
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$SelectionSort$selectionSortStep = function (track) {
 	var outer = track.outerIndex;
@@ -5968,6 +6475,14 @@ var $author$project$Main$update = F2(
 							insertionSortTrack: $author$project$InsertionSort$insertionSortStep(model.insertionSortTrack)
 						}),
 					$elm$core$Platform$Cmd$none);
+			case 'StepMergeSort':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							mergeSortTrack: $author$project$MergeSort$mergeSortStep(model.mergeSortTrack)
+						}),
+					$elm$core$Platform$Cmd$none);
 			case 'Start':
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -5983,6 +6498,7 @@ var $author$project$Main$update = F2(
 						{
 							bubbleSortTrack: $author$project$BubbleSort$bubbleSortStep(model.bubbleSortTrack),
 							insertionSortTrack: $author$project$InsertionSort$insertionSortStep(model.insertionSortTrack),
+							mergeSortTrack: $author$project$MergeSort$mergeSortStep(model.mergeSortTrack),
 							selectionSortTrack: $author$project$SelectionSort$selectionSortStep(model.selectionSortTrack)
 						}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -6133,6 +6649,14 @@ var $author$project$Main$view = function (model) {
 						model.insertionSortTrack.sorted,
 						model.insertionSortTrack.outerIndex,
 						$elm$core$Maybe$Just(model.insertionSortTrack.currentIndex),
+						$elm$core$Maybe$Nothing),
+						A6(
+						$author$project$Visualization$renderComparison,
+						model.mergeSortTrack.array,
+						'Merge Sort',
+						model.mergeSortTrack.sorted,
+						model.mergeSortTrack.outerIndex,
+						$elm$core$Maybe$Just(model.mergeSortTrack.currentIndex),
 						$elm$core$Maybe$Nothing)
 					])),
 				A2(

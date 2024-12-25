@@ -1,3 +1,5 @@
+-- elm make src/Main.elm --output=elm.js
+-- live-server
 module Main exposing (main)
 
 -- HTML Elements
@@ -17,6 +19,7 @@ import Visualization exposing (renderComparison)
 import BubbleSort
 import SelectionSort
 import InsertionSort
+import MergeSort
 
 -- Access to structs needed for program
 import Structs exposing (Model, SortingTrack)
@@ -30,6 +33,7 @@ initialTrack arr =
     , minIndex = 0
     , sorted = False
     , didSwap = False
+    , currentStep = 0
     }
 
 -- Initial state of the application
@@ -47,7 +51,11 @@ initialModel =
             track = initialTrack initialArray
         in
             { track | minIndex = track.outerIndex }
+
     , insertionSortTrack = initialTrack initialArray
+
+    , mergeSortTrack = initialTrack initialArray
+
     -- Don't run sorting algorithms until "Start" button pressed
     , running = False
     }
@@ -70,6 +78,7 @@ type Msg
     = StepBubbleSort
     | StepSelectionSort
     | StepInsertionSort
+    | StepMergeSort
     | Start
     | Reset
     | Tick Time.Posix
@@ -99,6 +108,12 @@ update msg model =
             ( { model | insertionSortTrack = InsertionSort.insertionSortStep model.insertionSortTrack }
             , Cmd.none
             )
+        
+        -- One step of MergeSort (calls MergeSort.elm)
+        StepMergeSort ->
+            ( { model | mergeSortTrack = MergeSort.mergeSortStep model.mergeSortTrack }
+            , Cmd.none
+            )
 
         -- Set model running state to True
         Start ->
@@ -115,6 +130,7 @@ update msg model =
                     | bubbleSortTrack = BubbleSort.bubbleSortStep model.bubbleSortTrack
                     , selectionSortTrack = SelectionSort.selectionSortStep model.selectionSortTrack
                     , insertionSortTrack = InsertionSort.insertionSortStep model.insertionSortTrack
+                    , mergeSortTrack = MergeSort.mergeSortStep model.mergeSortTrack
                   }
                 , Cmd.none
                 )
@@ -173,6 +189,15 @@ view model =
                 model.insertionSortTrack.sorted
                 model.insertionSortTrack.outerIndex
                 (Just model.insertionSortTrack.currentIndex)
+                Nothing
+
+            , renderComparison
+                -- MergeSort
+                model.mergeSortTrack.array
+                "Merge Sort"
+                model.mergeSortTrack.sorted
+                model.mergeSortTrack.outerIndex
+                (Just model.mergeSortTrack.currentIndex)
                 Nothing
             ]
 

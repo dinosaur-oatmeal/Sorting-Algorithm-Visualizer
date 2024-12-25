@@ -2,8 +2,8 @@ module SelectionSort exposing (selectionSortStep)
 
 import Array exposing (Array)
 
--- Access to structs needed for program
-import Structs exposing (Model, SortingTrack)
+-- Access to struct needed for program
+import Structs exposing (SortingTrack)
 
 {-  Move through the array with outerIndex
     For each outerIndex, find the smallest element in the rest of array

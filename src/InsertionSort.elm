@@ -2,8 +2,8 @@ module InsertionSort exposing (insertionSortStep)
 
 import Array exposing (Array)
 
--- Access to structs needed for program
-import Structs exposing (Model, SortingTrack)
+-- Access to struct needed for program
+import Structs exposing (SortingTrack)
 
 
 {-  Take element at outerIndex and move it into sorted position of array

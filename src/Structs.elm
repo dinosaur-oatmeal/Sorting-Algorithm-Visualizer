@@ -21,6 +21,8 @@ type alias SortingTrack =
     , sorted : Bool
     -- Indicates if a swap occurred in the current pass through array (Bubble)
     , didSwap : Bool
+    -- Tracks step for merge sort
+    , currentStep : Int
     }
 
 -- Holds the state of the entire application and gets updated via subscriptions
@@ -30,6 +32,7 @@ type alias Model =
     { bubbleSortTrack : SortingTrack
     , selectionSortTrack : SortingTrack
     , insertionSortTrack : SortingTrack
+    , mergeSortTrack : SortingTrack
     -- Flag to determine if the sorting algorithms are running
         -- needed for start button
     , running : Bool
