@@ -30,12 +30,12 @@ bubbleSortStep track =
                     if currentValue > nextValue then
                         let
                             -- Swap elements in array
-                            swappedArray =
+                            updatedArray =
                                 Array.set currentIndex nextValue (Array.set nextIndex currentValue arr)
                         in
                         -- Update track to reflect new array
                         { track
-                            | array = swappedArray
+                            | array = updatedArray
                             , outerIndex = currentIndex + 1
                             , didSwap = True
                             , currentIndex = nextIndex

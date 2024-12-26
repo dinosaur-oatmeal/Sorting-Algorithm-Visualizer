@@ -107,10 +107,10 @@ mergeArrays leftArray rightArray =
         mergeHelper leftIndex rightIndex combinedArray =
             case (Array.get leftIndex leftArray, Array.get rightIndex rightArray) of
                 (Just leftValue, Just rightValue) ->
-                    -- append leftValue to new array and increment leftIndex
+                    -- append leftValue to new array if smaller and increment leftIndex
                     if leftValue < rightValue then
                         mergeHelper (leftIndex + 1) rightIndex (Array.append combinedArray (Array.fromList [leftValue]))
-                    -- append rightValue to new array and increment rightIndex
+                    -- append rightValue to new array if smaller and increment rightIndex
                     else
                         mergeHelper leftIndex (rightIndex + 1) (Array.append combinedArray (Array.fromList [rightValue]))
 

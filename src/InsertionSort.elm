@@ -31,29 +31,28 @@ insertionSortStep track =
             { track
                 | outerIndex = outer + 1
                 , currentIndex = outer + 1
-                , didSwap = False
             }
         else
+            -- Get current value and previous value
             case (Array.get current arr, Array.get (current - 1) arr) of
                 (Just currentValue, Just previousValue) ->
+                    -- See if current < previous
                     if currentValue < previousValue then
                         let
                             -- Swap elements where smaller goes left
                             swappedArray =
                                 Array.set (current - 1) currentValue (Array.set current previousValue arr)
                         in
-                        -- Decrement currentIndex to move to front of array
+                        -- Decrement currentIndex to move toward front of array
                         { track
                             | array = swappedArray
                             , currentIndex = current - 1
-                            , didSwap = True
                         }
                     else
                         -- No swap needed, so insertion for element is done
                         { track
                             | outerIndex = outer + 1
                             , currentIndex = outer + 1
-                            , didSwap = False
                         }
 
                 -- Default constructor

@@ -50,24 +50,20 @@ selectionSortStep track =
             case (Array.get outer arr, Array.get minimum arr) of
                 (Just outerValue, Just minimumValue) ->
                     let
-                        newArray =
+                        updatedArray =
                             -- Swap outerValue with minimumValue if smaller
                             if minimum /= outer then
                                 Array.set outer minimumValue (Array.set minimum outerValue arr)
                             -- Return array if not smaller
                             else
                                 arr
-
-                        -- Test didSwap boolean accordingly
-                        didSwap = (minimum /= outer)
                     in
-                    -- Update track to reflect new array
+                    -- Update track to reflect changes
                     { track
-                        | array = newArray
+                        | array = updatedArray
                         , outerIndex = outer + 1
                         , currentIndex = outer + 2
                         , minIndex = outer + 1
-                        , didSwap = didSwap
                     }
 
                 -- Default constructor

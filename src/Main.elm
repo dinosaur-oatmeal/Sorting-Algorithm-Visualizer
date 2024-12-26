@@ -44,16 +44,8 @@ initialModel =
         initialArray = Array.fromList [9, 5, 3, 1, 6, 7, 10, 2, 4, 8]
     in
     { bubbleSortTrack = initialTrack initialArray
-
-    -- minIndex initialized to outerIndex for tracking to be correct
-    , selectionSortTrack = 
-        let
-            track = initialTrack initialArray
-        in
-            { track | minIndex = track.outerIndex }
-
+    , selectionSortTrack = initialTrack initialArray
     , insertionSortTrack = initialTrack initialArray
-
     , mergeSortTrack = initialTrack initialArray
 
     -- Don't run sorting algorithms until "Start" button pressed
@@ -75,11 +67,7 @@ main =
 
 -- List of all possible messages that will change our model (application's) state
 type Msg
-    = StepBubbleSort
-    | StepSelectionSort
-    | StepInsertionSort
-    | StepMergeSort
-    | Start
+    = Start
     | Reset
     | Tick Time.Posix
 
@@ -90,31 +78,6 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-
-        -- One step of BubbleSort (calls BubbleSort.elm)
-        StepBubbleSort ->
-            ( { model | bubbleSortTrack = BubbleSort.bubbleSortStep model.bubbleSortTrack }
-            , Cmd.none
-            )
-
-        -- One step of SelectionSort (calls SelectionSort.elm)
-        StepSelectionSort ->
-            ( { model | selectionSortTrack = SelectionSort.selectionSortStep model.selectionSortTrack }
-            , Cmd.none
-            )
-
-        -- One step of InsertionSort (calls InsertionSort.elm)
-        StepInsertionSort ->
-            ( { model | insertionSortTrack = InsertionSort.insertionSortStep model.insertionSortTrack }
-            , Cmd.none
-            )
-        
-        -- One step of MergeSort (calls MergeSort.elm)
-        StepMergeSort ->
-            ( { model | mergeSortTrack = MergeSort.mergeSortStep model.mergeSortTrack }
-            , Cmd.none
-            )
-
         -- Set model running state to True
         Start ->
             ( { model | running = True }, Cmd.none )
@@ -169,8 +132,9 @@ view model =
                 model.bubbleSortTrack.array
                 "Bubble Sort"
                 model.bubbleSortTrack.sorted
-                model.bubbleSortTrack.outerIndex
-                (Just model.bubbleSortTrack.currentIndex)
+                -- shows both elements being compared to one another
+                (model.bubbleSortTrack.outerIndex + 1)
+                model.bubbleSortTrack.currentIndex
                 Nothing
 
             , renderComparison
@@ -179,7 +143,7 @@ view model =
                 "Selection Sort"
                 model.selectionSortTrack.sorted
                 model.selectionSortTrack.outerIndex
-                (Just model.selectionSortTrack.currentIndex)
+                model.selectionSortTrack.currentIndex
                 (Just model.selectionSortTrack.minIndex)
 
             , renderComparison
@@ -188,7 +152,7 @@ view model =
                 "Insertion Sort"
                 model.insertionSortTrack.sorted
                 model.insertionSortTrack.outerIndex
-                (Just model.insertionSortTrack.currentIndex)
+                model.insertionSortTrack.currentIndex
                 Nothing
 
             , renderComparison
@@ -197,7 +161,7 @@ view model =
                 "Merge Sort"
                 model.mergeSortTrack.sorted
                 model.mergeSortTrack.outerIndex
-                (Just model.mergeSortTrack.currentIndex)
+                model.mergeSortTrack.currentIndex
                 Nothing
             ]
 

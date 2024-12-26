@@ -17,13 +17,14 @@ renderComparison :
     -> Bool 
     -- outerIndex for nested loops
     -> Int
-    -- currentIndex to see sorting specifics
-    -> Maybe Int
+    -- currentIndex to see current value being sorted
+    -> Int
     -- minIndex for SelectionSort
     -> Maybe Int
+    -- Output an HTML message
     -> Html msg
 
-renderComparison array title sorted outerIndex maybecurrentIndex maybeMinIndex =
+renderComparison array title sorted outerIndex currentIndex maybeMinIndex =
     div 
         -- Styling for each chart shown
         [ style "display" "flex"
@@ -47,7 +48,7 @@ renderComparison array title sorted outerIndex maybecurrentIndex maybeMinIndex =
             , style "padding" "10px"
             ]
             -- Convert array to list to map to bars rendered on the screen
-            (Array.toList array |> List.indexedMap (renderBar sorted outerIndex maybecurrentIndex maybeMinIndex))
+            (Array.toList array |> List.indexedMap (renderBar sorted outerIndex currentIndex maybeMinIndex))
         ]
 
 
@@ -56,8 +57,8 @@ renderBar :
     Bool 
     -- outerIndex for nested loops
     -> Int 
-    -- currentIndex to see sorting specifics
-    -> Maybe Int 
+    -- currentIndex to see current value being sorted
+    -> Int 
     -- minIndex for SelectionSort
     -> Maybe Int 
     -- Position for coloring
@@ -66,14 +67,17 @@ renderBar :
     -> Int 
     -> Html msg
 
-renderBar sorted outerIndex maybecurrentIndex maybeMinIndex position value =
+renderBar sorted outerIndex currentIndex maybeMinIndex position value =
     let
+        -- Outer index position
         isOuter = position == outerIndex
-        isCompare = 
-            case maybecurrentIndex of
-                Just ci -> position == ci
-                Nothing -> False
+        
+        -- Current index position
+        isCurrent = 
+            case currentIndex of
+                ci -> position == ci
 
+        -- Minimum index position (if used)
         isMin = 
             case maybeMinIndex of
                 Just mi -> position == mi
@@ -86,7 +90,7 @@ renderBar sorted outerIndex maybecurrentIndex maybeMinIndex position value =
                 "#FF5722" -- Red for outer index
             else if isMin then
                 "#FFA500" -- Orange for minIndex in selection sort
-            else if isCompare then
+            else if isCurrent then
                 "#FFC107" -- Yellow for currentIndex
             else
                 "#2196F3" -- Blue otherwise

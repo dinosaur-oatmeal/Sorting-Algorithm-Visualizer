@@ -5289,12 +5289,7 @@ var $author$project$Main$initialModel = function () {
 		insertionSortTrack: $author$project$Main$initialTrack(initialArray),
 		mergeSortTrack: $author$project$Main$initialTrack(initialArray),
 		running: false,
-		selectionSortTrack: function () {
-			var track = $author$project$Main$initialTrack(initialArray);
-			return _Utils_update(
-				track,
-				{minIndex: track.outerIndex});
-		}()
+		selectionSortTrack: $author$project$Main$initialTrack(initialArray)
 	};
 }();
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
@@ -5828,14 +5823,14 @@ var $author$project$BubbleSort$bubbleSortStep = function (track) {
 				var currentValue = _v0.a.a;
 				var nextValue = _v0.b.a;
 				if (_Utils_cmp(currentValue, nextValue) > 0) {
-					var swappedArray = A3(
+					var updatedArray = A3(
 						$elm$core$Array$set,
 						currentIndex,
 						nextValue,
 						A3($elm$core$Array$set, nextIndex, currentValue, arr));
 					return _Utils_update(
 						track,
-						{array: swappedArray, currentIndex: nextIndex, didSwap: true, outerIndex: currentIndex + 1});
+						{array: updatedArray, currentIndex: nextIndex, didSwap: true, outerIndex: currentIndex + 1});
 				} else {
 					return _Utils_update(
 						track,
@@ -5865,7 +5860,7 @@ var $author$project$InsertionSort$insertionSortStep = function (track) {
 		if (current <= 0) {
 			return _Utils_update(
 				track,
-				{currentIndex: outer + 1, didSwap: false, outerIndex: outer + 1});
+				{currentIndex: outer + 1, outerIndex: outer + 1});
 		} else {
 			var _v0 = _Utils_Tuple2(
 				A2($elm$core$Array$get, current, arr),
@@ -5881,11 +5876,11 @@ var $author$project$InsertionSort$insertionSortStep = function (track) {
 						A3($elm$core$Array$set, current, previousValue, arr));
 					return _Utils_update(
 						track,
-						{array: swappedArray, currentIndex: current - 1, didSwap: true});
+						{array: swappedArray, currentIndex: current - 1});
 				} else {
 					return _Utils_update(
 						track,
-						{currentIndex: outer + 1, didSwap: false, outerIndex: outer + 1});
+						{currentIndex: outer + 1, outerIndex: outer + 1});
 				}
 			} else {
 				return track;
@@ -6433,15 +6428,14 @@ var $author$project$SelectionSort$selectionSortStep = function (track) {
 			if ((_v1.a.$ === 'Just') && (_v1.b.$ === 'Just')) {
 				var outerValue = _v1.a.a;
 				var minimumValue = _v1.b.a;
-				var newArray = (!_Utils_eq(minimum, outer)) ? A3(
+				var updatedArray = (!_Utils_eq(minimum, outer)) ? A3(
 					$elm$core$Array$set,
 					outer,
 					minimumValue,
 					A3($elm$core$Array$set, minimum, outerValue, arr)) : arr;
-				var didSwap = !_Utils_eq(minimum, outer);
 				return _Utils_update(
 					track,
-					{array: newArray, currentIndex: outer + 2, didSwap: didSwap, minIndex: outer + 1, outerIndex: outer + 1});
+					{array: updatedArray, currentIndex: outer + 2, minIndex: outer + 1, outerIndex: outer + 1});
 			} else {
 				return track;
 			}
@@ -6451,38 +6445,6 @@ var $author$project$SelectionSort$selectionSortStep = function (track) {
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
-			case 'StepBubbleSort':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							bubbleSortTrack: $author$project$BubbleSort$bubbleSortStep(model.bubbleSortTrack)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'StepSelectionSort':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							selectionSortTrack: $author$project$SelectionSort$selectionSortStep(model.selectionSortTrack)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'StepInsertionSort':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							insertionSortTrack: $author$project$InsertionSort$insertionSortStep(model.insertionSortTrack)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'StepMergeSort':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							mergeSortTrack: $author$project$MergeSort$mergeSortStep(model.mergeSortTrack)
-						}),
-					$elm$core$Platform$Cmd$none);
 			case 'Start':
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -6528,7 +6490,7 @@ var $elm$html$Html$Events$onClick = function (msg) {
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Visualization$renderBar = F6(
-	function (sorted, outerIndex, maybecurrentIndex, maybeMinIndex, position, value) {
+	function (sorted, outerIndex, currentIndex, maybeMinIndex, position, value) {
 		var isOuter = _Utils_eq(position, outerIndex);
 		var isMin = function () {
 			if (maybeMinIndex.$ === 'Just') {
@@ -6538,15 +6500,11 @@ var $author$project$Visualization$renderBar = F6(
 				return false;
 			}
 		}();
-		var isCompare = function () {
-			if (maybecurrentIndex.$ === 'Just') {
-				var ci = maybecurrentIndex.a;
-				return _Utils_eq(position, ci);
-			} else {
-				return false;
-			}
+		var isCurrent = function () {
+			var ci = currentIndex;
+			return _Utils_eq(position, ci);
 		}();
-		var barColor = sorted ? '#4CAF50' : (isOuter ? '#FF5722' : (isMin ? '#FFA500' : (isCompare ? '#FFC107' : '#2196F3')));
+		var barColor = sorted ? '#4CAF50' : (isOuter ? '#FF5722' : (isMin ? '#FFA500' : (isCurrent ? '#FFC107' : '#2196F3')));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -6565,7 +6523,7 @@ var $author$project$Visualization$renderBar = F6(
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Visualization$renderComparison = F6(
-	function (array, title, sorted, outerIndex, maybecurrentIndex, maybeMinIndex) {
+	function (array, title, sorted, outerIndex, currentIndex, maybeMinIndex) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -6603,7 +6561,7 @@ var $author$project$Visualization$renderComparison = F6(
 						]),
 					A2(
 						$elm$core$List$indexedMap,
-						A4($author$project$Visualization$renderBar, sorted, outerIndex, maybecurrentIndex, maybeMinIndex),
+						A4($author$project$Visualization$renderBar, sorted, outerIndex, currentIndex, maybeMinIndex),
 						$elm$core$Array$toList(array)))
 				]));
 	});
@@ -6626,38 +6584,17 @@ var $author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						A6(
-						$author$project$Visualization$renderComparison,
-						model.bubbleSortTrack.array,
-						'Bubble Sort',
-						model.bubbleSortTrack.sorted,
-						model.bubbleSortTrack.outerIndex,
-						$elm$core$Maybe$Just(model.bubbleSortTrack.currentIndex),
-						$elm$core$Maybe$Nothing),
+						A6($author$project$Visualization$renderComparison, model.bubbleSortTrack.array, 'Bubble Sort', model.bubbleSortTrack.sorted, model.bubbleSortTrack.outerIndex + 1, model.bubbleSortTrack.currentIndex, $elm$core$Maybe$Nothing),
 						A6(
 						$author$project$Visualization$renderComparison,
 						model.selectionSortTrack.array,
 						'Selection Sort',
 						model.selectionSortTrack.sorted,
 						model.selectionSortTrack.outerIndex,
-						$elm$core$Maybe$Just(model.selectionSortTrack.currentIndex),
+						model.selectionSortTrack.currentIndex,
 						$elm$core$Maybe$Just(model.selectionSortTrack.minIndex)),
-						A6(
-						$author$project$Visualization$renderComparison,
-						model.insertionSortTrack.array,
-						'Insertion Sort',
-						model.insertionSortTrack.sorted,
-						model.insertionSortTrack.outerIndex,
-						$elm$core$Maybe$Just(model.insertionSortTrack.currentIndex),
-						$elm$core$Maybe$Nothing),
-						A6(
-						$author$project$Visualization$renderComparison,
-						model.mergeSortTrack.array,
-						'Merge Sort',
-						model.mergeSortTrack.sorted,
-						model.mergeSortTrack.outerIndex,
-						$elm$core$Maybe$Just(model.mergeSortTrack.currentIndex),
-						$elm$core$Maybe$Nothing)
+						A6($author$project$Visualization$renderComparison, model.insertionSortTrack.array, 'Insertion Sort', model.insertionSortTrack.sorted, model.insertionSortTrack.outerIndex, model.insertionSortTrack.currentIndex, $elm$core$Maybe$Nothing),
+						A6($author$project$Visualization$renderComparison, model.mergeSortTrack.array, 'Merge Sort', model.mergeSortTrack.sorted, model.mergeSortTrack.outerIndex, model.mergeSortTrack.currentIndex, $elm$core$Maybe$Nothing)
 					])),
 				A2(
 				$elm$html$Html$div,
