@@ -12,6 +12,11 @@ import Html.Events exposing (onClick)
 import Array exposing (Array)
 import Time
 
+-- Random list generation
+import Random exposing (Generator)
+import List exposing (range)
+import Random.List exposing (shuffle)
+
 -- Visualization for converting model into charts
 import Visualization exposing (renderComparison)
 
@@ -36,17 +41,22 @@ initialTrack arr =
     , currentStep = 0
     }
 
+-- Generate a random list from 1 - 50 for sorting algorithms
+randomListGenerator : Generator (List Int)
+randomListGenerator =
+    shuffle (range 1 50)
+
 -- Initial state of the application
 initialModel : Model
 initialModel =
     let
-        -- Initial array for all algorithms to sort
-        initialArray = Array.fromList [9, 5, 3, 1, 6, 7, 10, 2, 4, 8]
+        -- Initialize with an empty array
+        emptyArray = Array.fromList[]
     in
-    { bubbleSortTrack = initialTrack initialArray
-    , selectionSortTrack = initialTrack initialArray
-    , insertionSortTrack = initialTrack initialArray
-    , mergeSortTrack = initialTrack initialArray
+    { bubbleSortTrack = initialTrack emptyArray
+    , selectionSortTrack = initialTrack emptyArray
+    , insertionSortTrack = initialTrack emptyArray
+    , mergeSortTrack = initialTrack emptyArray
 
     -- Don't run sorting algorithms until "Start" button pressed
     , running = False
@@ -56,7 +66,8 @@ initialModel =
 main : Program () Model Msg
 main =
     Browser.element
-        { init = \_ -> (initialModel, Cmd.none)
+        -- Call randomListGenerator when init is called (start time of program)
+        { init = \_ -> (initialModel, Random.generate GotRandomList randomListGenerator)
         , update = update
         , subscriptions = subscriptions
         , view = view
@@ -69,6 +80,7 @@ main =
 type Msg
     = Start
     | Reset
+    | GotRandomList (List Int)
     | Tick Time.Posix
 
 
@@ -84,7 +96,21 @@ update msg model =
 
         -- Reset to initialModel and set set running state to False
         Reset ->
-            ( initialModel, Cmd.none )
+            ( initialModel, Random.generate GotRandomList randomListGenerator)
+
+        -- Populate model with random list and reinitialize sorting tracks
+        GotRandomList randomList ->
+            let
+                initialArray = Array.fromList randomList
+            in
+            ( { model
+                | bubbleSortTrack = initialTrack initialArray
+                , selectionSortTrack = initialTrack initialArray
+                , insertionSortTrack = initialTrack initialArray
+                , mergeSortTrack = initialTrack initialArray
+                }
+            , Cmd.none
+            )
 
         -- See if the algorithm is running and step all algorithms once if so
         Tick _ ->
