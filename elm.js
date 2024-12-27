@@ -6094,6 +6094,7 @@ var $author$project$InsertionSort$insertionSortStep = function (track) {
 		}
 	}
 };
+var $elm$core$Basics$pow = _Basics_pow;
 var $elm$core$Elm$JsArray$appendN = _JsArray_appendN;
 var $elm$core$Elm$JsArray$slice = _JsArray_slice;
 var $elm$core$Array$appendHelpBuilder = F2(
@@ -6550,51 +6551,48 @@ var $elm$core$Array$slice = F3(
 			correctFrom,
 			A2($elm$core$Array$sliceRight, correctTo, array));
 	});
-var $author$project$MergeSort$mergeSortArray = function (array) {
-	var arrayLength = $elm$core$Array$length(array);
-	if (arrayLength <= 1) {
-		return array;
-	} else {
-		var mid = (arrayLength / 2) | 0;
-		var right = A3($elm$core$Array$slice, mid, arrayLength, array);
-		var left = A3($elm$core$Array$slice, 0, mid, array);
-		return A2(
-			$author$project$MergeSort$mergeArrays,
-			$author$project$MergeSort$mergeSortArray(left),
-			$author$project$MergeSort$mergeSortArray(right));
-	}
-};
-var $elm$core$List$sort = function (xs) {
-	return A2($elm$core$List$sortBy, $elm$core$Basics$identity, xs);
-};
-var $author$project$MergeSort$mergeSortHelper = F3(
-	function (array, currentStep, arrayLength) {
-		if (arrayLength <= 1) {
-			return {array: array, currentIndex: 0, nextStep: currentStep, outerIndex: 0, sorted: true};
-		} else {
-			var nextStep = currentStep + 1;
-			var mid = (arrayLength / 2) | 0;
-			var right = A3($elm$core$Array$slice, mid, arrayLength, array);
-			var sortedRight = (currentStep === 1) ? right : $author$project$MergeSort$mergeSortArray(right);
-			var rightIndex = ($elm$core$Array$length(right) > 0) ? mid : (-1);
-			var left = A3($elm$core$Array$slice, 0, mid, array);
-			var leftIndex = ($elm$core$Array$length(left) > 0) ? 0 : (-1);
-			var sortedLeft = (!currentStep) ? left : $author$project$MergeSort$mergeSortArray(left);
-			var mergedArray = A2($author$project$MergeSort$mergeArrays, sortedLeft, sortedRight);
-			var isFullySorted = _Utils_eq(
-				$elm$core$Array$toList(mergedArray),
-				$elm$core$List$sort(
-					$elm$core$Array$toList(array)));
-			return {array: mergedArray, currentIndex: leftIndex, nextStep: nextStep, outerIndex: rightIndex, sorted: isFullySorted};
-		}
+var $author$project$MergeSort$processMergeStep = F3(
+	function (currentStep, halfStep, array) {
+		var stepSize = A2($elm$core$Basics$pow, 2, currentStep);
+		var arrayLength = $elm$core$Array$length(array);
+		var processSegments = F2(
+			function (start, acc) {
+				processSegments:
+				while (true) {
+					if (_Utils_cmp(start, arrayLength) > -1) {
+						return acc;
+					} else {
+						var right = A3($elm$core$Array$slice, start + halfStep, start + stepSize, array);
+						var left = A3($elm$core$Array$slice, start, start + halfStep, array);
+						var merged = A2($author$project$MergeSort$mergeArrays, left, right);
+						var $temp$start = start + stepSize,
+							$temp$acc = A2($elm$core$Array$append, acc, merged);
+						start = $temp$start;
+						acc = $temp$acc;
+						continue processSegments;
+					}
+				}
+			});
+		return A2(processSegments, 0, $elm$core$Array$empty);
 	});
 var $author$project$MergeSort$mergeSortStep = function (track) {
+	var outerIndex = track.outerIndex;
+	var currentStep = track.currentStep;
+	var halfStep = (A2($elm$core$Basics$pow, 2, currentStep) / 2) | 0;
 	var array = track.array;
 	var arrayLength = $elm$core$Array$length(array);
-	var state = A3($author$project$MergeSort$mergeSortHelper, array, track.currentStep, arrayLength);
+	var totalSteps = $elm$core$Basics$ceiling(
+		A2($elm$core$Basics$logBase, 2, arrayLength));
+	var isSorted = _Utils_cmp(currentStep, totalSteps) > 0;
+	var updatedArray = (!isSorted) ? A3($author$project$MergeSort$processMergeStep, currentStep, halfStep, array) : array;
 	return _Utils_update(
 		track,
-		{array: state.array, currentIndex: state.currentIndex, currentStep: state.nextStep, outerIndex: state.outerIndex, sorted: state.sorted});
+		{
+			array: updatedArray,
+			currentStep: isSorted ? currentStep : (currentStep + 1),
+			outerIndex: halfStep,
+			sorted: isSorted
+		});
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
@@ -6728,7 +6726,7 @@ var $author$project$Visualization$renderBar = F6(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					A2($elm$html$Html$Attributes$style, 'width', '15px'),
+					A2($elm$html$Html$Attributes$style, 'width', '8px'),
 					A2(
 					$elm$html$Html$Attributes$style,
 					'height',

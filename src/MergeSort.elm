@@ -6,123 +6,100 @@ import Structs exposing (SortingTrack)
 {-  Divide the array into subarrays until each subarray has one element
     Merge adjacent subarrays by comparing elements and sorting them
     Continue merging until the entire array is sorted
+    Track process with currentStep
 -}
-
--- Custom record to hold all data and tracked indices for merge sort
-    -- tuple didn't work with more than 3 items
-type alias MergeState =
-    { array : Array Int
-    , nextStep : Int
-    , sorted : Bool
-    , currentIndex : Int
-    , outerIndex : Int
-    }
 
 mergeSortStep : SortingTrack -> SortingTrack
 mergeSortStep track =
     let
         array = track.array
         arrayLength = Array.length array
+        currentStep = track.currentStep
+        outerIndex = track.outerIndex
 
-        -- Update custom MergeState record
-        state = mergeSortHelper array track.currentStep arrayLength
+        -- Track steps to know when sorting is complete (log2 array length)
+        totalSteps = ceiling (logBase 2 (toFloat arrayLength))
+
+        -- Check if sorting is complete
+        isSorted = currentStep > totalSteps
+
+        -- Calculate halfStep (midpoint of current step)
+        halfStep = 2 ^ currentStep // 2
+        
+        updatedArray =
+            -- Perform one step of merging
+            if not isSorted then
+                -- One step of MergeSort
+                processMergeStep currentStep halfStep array
+            -- Don't update array if sorted
+            else
+                array
+
+    -- Update track with necessary info for next step
     in
-    -- Update SortingTrack (passed to Main.elm) with updated variables
     { track
-        | array = state.array
-        , currentStep = state.nextStep
-        , sorted = state.sorted
-        , outerIndex = state.outerIndex
-        , currentIndex = state.currentIndex
+        | array = updatedArray
+        -- Current step updates to know if sorting complete
+        , currentStep =
+            if isSorted then
+                currentStep
+            else
+                currentStep + 1
+        , outerIndex = halfStep
+        , sorted = isSorted
     }
 
--- Perform one step of merge sort on the array
-mergeSortHelper : Array Int -> Int -> Int -> MergeState
-mergeSortHelper array currentStep arrayLength =
-    -- Update MergeState to be sorted if length is 1 or less
-    if arrayLength <= 1 then
-        { array = array
-        , nextStep = currentStep
-        , sorted = True
-        , currentIndex = 0
-        , outerIndex = 0
-        }
-    else
-        let
-            -- Find left, mid, and right values
-            left = Array.slice 0 mid array
-            mid = arrayLength // 2
-            right = Array.slice mid arrayLength array
-
-            -- Only sort left if currentStep = 1
-            sortedLeft = if currentStep == 0 then left else mergeSortArray left
-            -- Only sort right if currentStep = 0 (sorted first)
-            sortedRight = if currentStep == 1 then right else mergeSortArray right
-
-            -- Merge subarrays into one
-            mergedArray = mergeArrays sortedLeft sortedRight
-
-            -- Left index is 0 if length > 0
-            leftIndex = if Array.length left > 0 then 0 else -1
-            -- Right index is mid if length > 0
-            rightIndex = if Array.length right > 0 then mid else -1
-
-            -- Cheat to check if array is sorted
-            isFullySorted = Array.toList mergedArray == List.sort (Array.toList array)
-
-            -- Increment step counter
-            nextStep = currentStep + 1
-        -- Update MergeState to track variables
-        in
-        { array = mergedArray
-        , nextStep = nextStep
-        , sorted = isFullySorted
-        , currentIndex = leftIndex
-        , outerIndex = rightIndex
-        }
-
--- Recursively sort an array using merge sort
-mergeSortArray : Array Int -> Array Int
-mergeSortArray array =
+-- Process one step of merging based on the current step
+processMergeStep : Int -> Int -> Array Int -> Array Int
+processMergeStep currentStep halfStep array =
     let
         arrayLength = Array.length array
-    in
-    -- Return array as is because 1 element or less is sorted
-    if arrayLength <= 1 then
-        array
-    else
-        let
-            -- Find left, mid, and right values for divide
-            left = Array.slice 0 mid array
-            mid = arrayLength // 2
-            right = Array.slice mid arrayLength array
-        in
-        -- Recursively sorts arrays into 1 greater array
-        mergeArrays (mergeSortArray left) (mergeSortArray right)
+        -- Size of arrays being merged
+        stepSize = 2 ^ currentStep
 
--- Merge two sorted arrays into a single sorted array
+        -- Recursively process each segment pair and merge them
+        processSegments start acc =
+            if start >= arrayLength then
+                acc
+            else
+                let
+                    -- Left: start to (start + halfStep)
+                    left = Array.slice start (start + halfStep) array
+                    -- Right: (start + halfStep) to (start + stepSize)
+                    right = Array.slice (start + halfStep) (start + stepSize) array
+                    -- Call mergeArrays function with subarrays
+                    merged = mergeArrays left right
+                in
+                -- Recursively call processSegments (Divide)
+                processSegments (start + stepSize) (Array.append acc merged)
+    in
+    -- Initial call to processSegments
+    processSegments 0 Array.empty
+
+-- Merge two sorted arrays into a single sorted array (Conquer)
 mergeArrays : Array Int -> Array Int -> Array Int
 mergeArrays leftArray rightArray =
     let
+        -- Recursively merges elements
         mergeHelper leftIndex rightIndex combinedArray =
             case (Array.get leftIndex leftArray, Array.get rightIndex rightArray) of
                 (Just leftValue, Just rightValue) ->
-                    -- append leftValue to new array if smaller and increment leftIndex
+                    -- Append leftValue to new array if smaller and increment leftIndex
                     if leftValue < rightValue then
                         mergeHelper (leftIndex + 1) rightIndex (Array.append combinedArray (Array.fromList [leftValue]))
-                    -- append rightValue to new array if smaller and increment rightIndex
+                    -- Append rightValue to new array if smaller and increment rightIndex
                     else
                         mergeHelper leftIndex (rightIndex + 1) (Array.append combinedArray (Array.fromList [rightValue]))
 
-                -- Only leftArray has values, so append the rest of leftArray
+                -- Only leftArray has values, so apped the rest of leftArray
                 (Just leftValue, Nothing) ->
                     mergeHelper (leftIndex + 1) rightIndex (Array.append combinedArray (Array.fromList [leftValue]))
 
-                -- Only rightArray has values, so append the rist of rightArray
+                -- Only rightArray has values, so append the rest of rightArray
                 (Nothing, Just rightValue) ->
                     mergeHelper leftIndex (rightIndex + 1) (Array.append combinedArray (Array.fromList [rightValue]))
 
-                -- Both smaller arrays exhausted and return final combinedArray
+                -- Both smaller arrays are empty, so return final array
                 (Nothing, Nothing) ->
                     combinedArray
     in

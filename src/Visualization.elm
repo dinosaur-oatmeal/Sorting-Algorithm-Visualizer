@@ -97,10 +97,10 @@ renderBar sorted outerIndex currentIndex maybeMinIndex position value =
     in
     div 
         -- Styling for each bar in chart
-        [ style "width" "15px" -- Reduced width for more compact bars
-        , style "height" (String.fromInt (value * 5) ++ "px") -- Reduced height scaling
+        [ style "width" "8px"
+        , style "height" (String.fromInt (value * 5) ++ "px")
         , style "background-color" barColor
-        , style "margin" "1px" -- Smaller gap between bars
+        , style "margin" "1px"
         , style "transition" "height 0.5s ease, background-color 0.5s ease"
         ]
         []
