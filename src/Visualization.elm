@@ -26,16 +26,16 @@ renderComparison :
 
 renderComparison array title sorted outerIndex currentIndex maybeMinIndex =
     div 
-        -- Styling for each chart shown
         [ style "display" "flex"
         , style "flex-direction" "column"
         , style "align-items" "center"
         , style "width" "100%"
-        , style "padding" "20px"
+        , style "height" "250px"
+        , style "padding" "10px"
         ]
         [ div 
-            [ style "font-size" "20px"
-            , style "margin-bottom" "10px"
+            [ style "font-size" "15px"
+            , style "margin-bottom" "5px"
             , style "font-weight" "bold"
             ]
             [ text title ]
@@ -43,14 +43,12 @@ renderComparison array title sorted outerIndex currentIndex maybeMinIndex =
             [ style "display" "flex"
             , style "align-items" "flex-end"
             , style "justify-content" "center"
-            , style "height" "300px"
+            , style "height" "150px"
             , style "border" "1px solid #ccc"
-            , style "padding" "10px"
+            , style "padding" "5px"
             ]
-            -- Convert array to list to map to bars rendered on the screen
             (Array.toList array |> List.indexedMap (renderBar sorted outerIndex currentIndex maybeMinIndex))
         ]
-
 
 renderBar :
     -- Flag if the array is currently sorted
@@ -97,8 +95,8 @@ renderBar sorted outerIndex currentIndex maybeMinIndex position value =
     in
     div 
         -- Styling for each bar in chart
-        [ style "width" "8px"
-        , style "height" (String.fromInt (value * 5) ++ "px")
+        [ style "width" "6px"
+        , style "height" (String.fromInt (value * 3) ++ "px")
         , style "background-color" barColor
         , style "margin" "1px"
         , style "transition" "height 0.5s ease, background-color 0.5s ease"

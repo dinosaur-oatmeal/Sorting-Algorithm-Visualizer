@@ -5,7 +5,7 @@ module Main exposing (main)
 -- HTML Elements
 import Browser
 import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (style, class)
 import Html.Events exposing (onClick)
 
 -- Array and Timing
@@ -141,54 +141,76 @@ subscriptions model =
 -- VIEW
 
 view : Model -> Html Msg
--- Render the charts and buttons onto the screen
 view model =
     div []
         [ div
-            -- Styling for charts
-            [ style "display" "flex"
-            , style "justify-content" "space-around"
-            , style "align-items" "flex-start"
-            , style "flex-wrap" "nowrap"
-            , style "gap" "20px"
-            , style "padding" "20px"
+            -- Styling for charts container
+            [ class "sorting-container" ]
+            [ div [ class "sorting-card" ]
+                [ renderComparison
+                    -- BubbleSort
+                    model.bubbleSortTrack.array
+                    "Bubble Sort"
+                    model.bubbleSortTrack.sorted
+                    (model.bubbleSortTrack.outerIndex + 1)
+                    model.bubbleSortTrack.currentIndex
+                    Nothing
+                ]
+            , div [ class "sorting-card" ]
+                [ renderComparison
+                    -- SelectionSort
+                    model.selectionSortTrack.array
+                    "Selection Sort"
+                    model.selectionSortTrack.sorted
+                    model.selectionSortTrack.outerIndex
+                    model.selectionSortTrack.currentIndex
+                    (Just model.selectionSortTrack.minIndex)
+                ]
+            , div [ class "sorting-card" ]
+                [ renderComparison
+                    -- InsertionSort
+                    model.insertionSortTrack.array
+                    "Insertion Sort"
+                    model.insertionSortTrack.sorted
+                    model.insertionSortTrack.outerIndex
+                    model.insertionSortTrack.currentIndex
+                    Nothing
+                ]
             ]
-            [ renderComparison
-                -- BubbleSort
-                model.bubbleSortTrack.array
-                "Bubble Sort"
-                model.bubbleSortTrack.sorted
-                -- shows both elements being compared to one another
-                (model.bubbleSortTrack.outerIndex + 1)
-                model.bubbleSortTrack.currentIndex
-                Nothing
 
-            , renderComparison
-                -- SelectionSort
-                model.selectionSortTrack.array
-                "Selection Sort"
-                model.selectionSortTrack.sorted
-                model.selectionSortTrack.outerIndex
-                model.selectionSortTrack.currentIndex
-                (Just model.selectionSortTrack.minIndex)
-
-            , renderComparison
-                -- InsertionSort
-                model.insertionSortTrack.array
-                "Insertion Sort"
-                model.insertionSortTrack.sorted
-                model.insertionSortTrack.outerIndex
-                model.insertionSortTrack.currentIndex
-                Nothing
-
-            , renderComparison
-                -- MergeSort
-                model.mergeSortTrack.array
-                "Merge Sort"
-                model.mergeSortTrack.sorted
-                model.mergeSortTrack.outerIndex
-                model.mergeSortTrack.currentIndex
-                Nothing
+        , div
+            -- Styling for charts container
+            [ class "sorting-container" ]
+            [ div [ class "sorting-card" ]
+                [ renderComparison
+                    -- MergeSort
+                    model.mergeSortTrack.array
+                    "Merge Sort"
+                    model.mergeSortTrack.sorted
+                    model.mergeSortTrack.outerIndex
+                    model.mergeSortTrack.currentIndex
+                    Nothing
+                ]
+            , div [ class "sorting-card" ]
+                [ renderComparison
+                    -- SelectionSort
+                    model.selectionSortTrack.array
+                    "Selection Sort"
+                    model.selectionSortTrack.sorted
+                    model.selectionSortTrack.outerIndex
+                    model.selectionSortTrack.currentIndex
+                    (Just model.selectionSortTrack.minIndex)
+                ]
+            , div [ class "sorting-card" ]
+                [ renderComparison
+                    -- InsertionSort
+                    model.insertionSortTrack.array
+                    "Insertion Sort"
+                    model.insertionSortTrack.sorted
+                    model.insertionSortTrack.outerIndex
+                    model.insertionSortTrack.currentIndex
+                    Nothing
+                ]
             ]
 
         , div
@@ -196,7 +218,6 @@ view model =
             [ style "text-align" "center"
             , style "margin-top" "20px"
             ]
-            -- Buttons to start and reset sorting
             [ button [ onClick Start ] [ text "Start" ]
             , button [ onClick Reset ] [ text "Reset" ]
             ]

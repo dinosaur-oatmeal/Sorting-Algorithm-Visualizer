@@ -6686,6 +6686,15 @@ var $author$project$Main$update = F2(
 var $author$project$Main$Reset = {$: 'Reset'};
 var $author$project$Main$Start = {$: 'Start'};
 var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -6726,11 +6735,11 @@ var $author$project$Visualization$renderBar = F6(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					A2($elm$html$Html$Attributes$style, 'width', '8px'),
+					A2($elm$html$Html$Attributes$style, 'width', '6px'),
 					A2(
 					$elm$html$Html$Attributes$style,
 					'height',
-					$elm$core$String$fromInt(value * 5) + 'px'),
+					$elm$core$String$fromInt(value * 3) + 'px'),
 					A2($elm$html$Html$Attributes$style, 'background-color', barColor),
 					A2($elm$html$Html$Attributes$style, 'margin', '1px'),
 					A2($elm$html$Html$Attributes$style, 'transition', 'height 0.5s ease, background-color 0.5s ease')
@@ -6749,7 +6758,8 @@ var $author$project$Visualization$renderComparison = F6(
 					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
 					A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
 					A2($elm$html$Html$Attributes$style, 'width', '100%'),
-					A2($elm$html$Html$Attributes$style, 'padding', '20px')
+					A2($elm$html$Html$Attributes$style, 'height', '250px'),
+					A2($elm$html$Html$Attributes$style, 'padding', '10px')
 				]),
 			_List_fromArray(
 				[
@@ -6757,8 +6767,8 @@ var $author$project$Visualization$renderComparison = F6(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							A2($elm$html$Html$Attributes$style, 'font-size', '20px'),
-							A2($elm$html$Html$Attributes$style, 'margin-bottom', '10px'),
+							A2($elm$html$Html$Attributes$style, 'font-size', '15px'),
+							A2($elm$html$Html$Attributes$style, 'margin-bottom', '5px'),
 							A2($elm$html$Html$Attributes$style, 'font-weight', 'bold')
 						]),
 					_List_fromArray(
@@ -6772,9 +6782,9 @@ var $author$project$Visualization$renderComparison = F6(
 							A2($elm$html$Html$Attributes$style, 'display', 'flex'),
 							A2($elm$html$Html$Attributes$style, 'align-items', 'flex-end'),
 							A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-							A2($elm$html$Html$Attributes$style, 'height', '300px'),
+							A2($elm$html$Html$Attributes$style, 'height', '150px'),
 							A2($elm$html$Html$Attributes$style, 'border', '1px solid #ccc'),
-							A2($elm$html$Html$Attributes$style, 'padding', '10px')
+							A2($elm$html$Html$Attributes$style, 'padding', '5px')
 						]),
 					A2(
 						$elm$core$List$indexedMap,
@@ -6792,26 +6802,93 @@ var $author$project$Main$view = function (model) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-						A2($elm$html$Html$Attributes$style, 'justify-content', 'space-around'),
-						A2($elm$html$Html$Attributes$style, 'align-items', 'flex-start'),
-						A2($elm$html$Html$Attributes$style, 'flex-wrap', 'nowrap'),
-						A2($elm$html$Html$Attributes$style, 'gap', '20px'),
-						A2($elm$html$Html$Attributes$style, 'padding', '20px')
+						$elm$html$Html$Attributes$class('sorting-container')
 					]),
 				_List_fromArray(
 					[
-						A6($author$project$Visualization$renderComparison, model.bubbleSortTrack.array, 'Bubble Sort', model.bubbleSortTrack.sorted, model.bubbleSortTrack.outerIndex + 1, model.bubbleSortTrack.currentIndex, $elm$core$Maybe$Nothing),
-						A6(
-						$author$project$Visualization$renderComparison,
-						model.selectionSortTrack.array,
-						'Selection Sort',
-						model.selectionSortTrack.sorted,
-						model.selectionSortTrack.outerIndex,
-						model.selectionSortTrack.currentIndex,
-						$elm$core$Maybe$Just(model.selectionSortTrack.minIndex)),
-						A6($author$project$Visualization$renderComparison, model.insertionSortTrack.array, 'Insertion Sort', model.insertionSortTrack.sorted, model.insertionSortTrack.outerIndex, model.insertionSortTrack.currentIndex, $elm$core$Maybe$Nothing),
-						A6($author$project$Visualization$renderComparison, model.mergeSortTrack.array, 'Merge Sort', model.mergeSortTrack.sorted, model.mergeSortTrack.outerIndex, model.mergeSortTrack.currentIndex, $elm$core$Maybe$Nothing)
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('sorting-card')
+							]),
+						_List_fromArray(
+							[
+								A6($author$project$Visualization$renderComparison, model.bubbleSortTrack.array, 'Bubble Sort', model.bubbleSortTrack.sorted, model.bubbleSortTrack.outerIndex + 1, model.bubbleSortTrack.currentIndex, $elm$core$Maybe$Nothing)
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('sorting-card')
+							]),
+						_List_fromArray(
+							[
+								A6(
+								$author$project$Visualization$renderComparison,
+								model.selectionSortTrack.array,
+								'Selection Sort',
+								model.selectionSortTrack.sorted,
+								model.selectionSortTrack.outerIndex,
+								model.selectionSortTrack.currentIndex,
+								$elm$core$Maybe$Just(model.selectionSortTrack.minIndex))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('sorting-card')
+							]),
+						_List_fromArray(
+							[
+								A6($author$project$Visualization$renderComparison, model.insertionSortTrack.array, 'Insertion Sort', model.insertionSortTrack.sorted, model.insertionSortTrack.outerIndex, model.insertionSortTrack.currentIndex, $elm$core$Maybe$Nothing)
+							]))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('sorting-container')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('sorting-card')
+							]),
+						_List_fromArray(
+							[
+								A6($author$project$Visualization$renderComparison, model.mergeSortTrack.array, 'Merge Sort', model.mergeSortTrack.sorted, model.mergeSortTrack.outerIndex, model.mergeSortTrack.currentIndex, $elm$core$Maybe$Nothing)
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('sorting-card')
+							]),
+						_List_fromArray(
+							[
+								A6(
+								$author$project$Visualization$renderComparison,
+								model.selectionSortTrack.array,
+								'Selection Sort',
+								model.selectionSortTrack.sorted,
+								model.selectionSortTrack.outerIndex,
+								model.selectionSortTrack.currentIndex,
+								$elm$core$Maybe$Just(model.selectionSortTrack.minIndex))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('sorting-card')
+							]),
+						_List_fromArray(
+							[
+								A6($author$project$Visualization$renderComparison, model.insertionSortTrack.array, 'Insertion Sort', model.insertionSortTrack.sorted, model.insertionSortTrack.outerIndex, model.insertionSortTrack.currentIndex, $elm$core$Maybe$Nothing)
+							]))
 					])),
 				A2(
 				$elm$html$Html$div,

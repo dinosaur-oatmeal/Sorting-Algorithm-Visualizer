@@ -20,15 +20,47 @@
     body {
         font-family: Arial, sans-serif;
         text-align: center;
-        margin-top: 50px;
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
     }
+
+    .sorting-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    gap: 350px;       /* Add spacing between cards */
+}
+
+.sorting-card {
+    width: 150px;
+    text-align: center;
+    padding: 10px;
+    box-sizing: border-box;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+
+    .button-container {
+        text-align: center;
+        margin-top: auto; /* Push buttons to the bottom of the page */
+        padding: 15px;
+    }
+
     button {
         padding: 10px 20px;
         font-size: 16px;
         margin: 5px;
+        cursor: pointer;
     }
-    div {
-        font-size: 24px;
-        margin: 10px;
+
+    button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
     }
 </style>
