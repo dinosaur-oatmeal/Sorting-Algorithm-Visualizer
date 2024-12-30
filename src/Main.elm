@@ -25,6 +25,7 @@ import BubbleSort
 import SelectionSort
 import InsertionSort
 import MergeSort
+import QuickSort
 
 -- Access to structs needed for program
 import Structs exposing (Model, SortingTrack)
@@ -39,6 +40,7 @@ initialTrack arr =
     , sorted = False
     , didSwap = False
     , currentStep = 0
+    , stack = [ ( 0, 49 ) ]
     }
 
 -- Generate a random list from 1 - 50 for sorting algorithms
@@ -57,6 +59,7 @@ initialModel =
     , selectionSortTrack = initialTrack emptyArray
     , insertionSortTrack = initialTrack emptyArray
     , mergeSortTrack = initialTrack emptyArray
+    , quickSortTrack = initialTrack emptyArray
 
     -- Don't run sorting algorithms until "Start" button pressed
     , running = False
@@ -108,7 +111,8 @@ update msg model =
                 , selectionSortTrack = initialTrack initialArray
                 , insertionSortTrack = initialTrack initialArray
                 , mergeSortTrack = initialTrack initialArray
-                }
+                , quickSortTrack = initialTrack initialArray
+              }
             , Cmd.none
             )
 
@@ -120,6 +124,7 @@ update msg model =
                     , selectionSortTrack = SelectionSort.selectionSortStep model.selectionSortTrack
                     , insertionSortTrack = InsertionSort.insertionSortStep model.insertionSortTrack
                     , mergeSortTrack = MergeSort.mergeSortStep model.mergeSortTrack
+                    , quickSortTrack = QuickSort.quickSortStep model.quickSortTrack
                   }
                 , Cmd.none
                 )
@@ -193,13 +198,13 @@ view model =
                 ]
             , div [ class "sorting-card" ]
                 [ renderComparison
-                    -- SelectionSort
-                    model.selectionSortTrack.array
-                    "Selection Sort"
-                    model.selectionSortTrack.sorted
-                    model.selectionSortTrack.outerIndex
-                    model.selectionSortTrack.currentIndex
-                    (Just model.selectionSortTrack.minIndex)
+                    -- QuickSort
+                    model.quickSortTrack.array
+                    "Quick Sort"
+                    model.quickSortTrack.sorted
+                    model.quickSortTrack.outerIndex
+                    model.quickSortTrack.currentIndex
+                    Nothing
                 ]
             , div [ class "sorting-card" ]
                 [ renderComparison

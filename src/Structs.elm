@@ -17,11 +17,13 @@ type alias SortingTrack =
     , currentIndex : Int
     -- Minimum index in part of array unsorted (Selection)
     , minIndex : Int
+    -- Stack to track left and right indices of subarrays (Quick)
+    , stack : List ( Int, Int )
     -- Tells us if the array is sorted
     , sorted : Bool
     -- Indicates if a swap occurred in the current pass through array (Bubble)
     , didSwap : Bool
-    -- Tracks step for merge sort
+    -- Tracks steps in divide and conquer array (Merge/Quick)
     , currentStep : Int
     }
 
@@ -33,6 +35,7 @@ type alias Model =
     , selectionSortTrack : SortingTrack
     , insertionSortTrack : SortingTrack
     , mergeSortTrack : SortingTrack
+    , quickSortTrack : SortingTrack
     -- Flag to determine if the sorting algorithms are running
         -- needed for start button
     , running : Bool

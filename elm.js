@@ -5388,7 +5388,19 @@ var $elm$core$Array$fromList = function (list) {
 	}
 };
 var $author$project$Main$initialTrack = function (arr) {
-	return {array: arr, currentIndex: 1, currentStep: 0, didSwap: false, minIndex: 0, outerIndex: 0, sorted: false};
+	return {
+		array: arr,
+		currentIndex: 1,
+		currentStep: 0,
+		didSwap: false,
+		minIndex: 0,
+		outerIndex: 0,
+		sorted: false,
+		stack: _List_fromArray(
+			[
+				_Utils_Tuple2(0, 49)
+			])
+	};
 };
 var $author$project$Main$initialModel = function () {
 	var emptyArray = $elm$core$Array$fromList(_List_Nil);
@@ -5396,6 +5408,7 @@ var $author$project$Main$initialModel = function () {
 		bubbleSortTrack: $author$project$Main$initialTrack(emptyArray),
 		insertionSortTrack: $author$project$Main$initialTrack(emptyArray),
 		mergeSortTrack: $author$project$Main$initialTrack(emptyArray),
+		quickSortTrack: $author$project$Main$initialTrack(emptyArray),
 		running: false,
 		selectionSortTrack: $author$project$Main$initialTrack(emptyArray)
 	};
@@ -6596,6 +6609,105 @@ var $author$project$MergeSort$mergeSortStep = function (track) {
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$QuickSort$swap = F3(
+	function (indexOne, indexTwo, arr) {
+		var elementTwo = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			A2($elm$core$Array$get, indexTwo, arr));
+		var elementOne = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			A2($elm$core$Array$get, indexOne, arr));
+		return A3(
+			$elm$core$Array$set,
+			indexTwo,
+			elementOne,
+			A3($elm$core$Array$set, indexOne, elementTwo, arr));
+	});
+var $author$project$QuickSort$partition = F3(
+	function (low, high, track) {
+		var pivot = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			A2($elm$core$Array$get, high, track.array));
+		var loop = F2(
+			function (_v1, currentIndex) {
+				var currentTrack = _v1.a;
+				var partitionIndex = _v1.b;
+				var currentElement = A2(
+					$elm$core$Maybe$withDefault,
+					0,
+					A2($elm$core$Array$get, currentIndex, currentTrack.array));
+				if (_Utils_cmp(currentElement, pivot) < 0) {
+					var updatedArray = A3($author$project$QuickSort$swap, currentIndex, partitionIndex, currentTrack.array);
+					return _Utils_Tuple2(
+						_Utils_update(
+							currentTrack,
+							{array: updatedArray}),
+						partitionIndex + 1);
+				} else {
+					return _Utils_Tuple2(currentTrack, partitionIndex);
+				}
+			});
+		var _v0 = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (currentIndex, acc) {
+					return A2(loop, acc, currentIndex);
+				}),
+			_Utils_Tuple2(track, low),
+			A2($elm$core$List$range, low, high - 1));
+		var newTrack = _v0.a;
+		var pivotIndex = _v0.b;
+		var finalArray = A3($author$project$QuickSort$swap, pivotIndex, high, newTrack.array);
+		return _Utils_Tuple2(
+			pivotIndex,
+			_Utils_update(
+				newTrack,
+				{array: finalArray}));
+	});
+var $author$project$QuickSort$quickSortStep = function (track) {
+	var _v0 = track.stack;
+	if (!_v0.b) {
+		return _Utils_update(
+			track,
+			{sorted: true});
+	} else {
+		var _v1 = _v0.a;
+		var low = _v1.a;
+		var high = _v1.b;
+		var rest = _v0.b;
+		if (_Utils_cmp(low, high) < 0) {
+			var _v2 = A3($author$project$QuickSort$partition, low, high, track);
+			var pivotIndex = _v2.a;
+			var newTrack = _v2.b;
+			var newStack = A2(
+				$elm$core$List$cons,
+				_Utils_Tuple2(low, pivotIndex - 1),
+				A2(
+					$elm$core$List$cons,
+					_Utils_Tuple2(pivotIndex + 1, high),
+					rest));
+			return _Utils_update(
+				newTrack,
+				{currentStep: track.currentStep + 1, outerIndex: pivotIndex, stack: newStack});
+		} else {
+			return _Utils_update(
+				track,
+				{stack: rest});
+		}
+	}
+};
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$SelectionSort$selectionSortStep = function (track) {
 	var outer = track.outerIndex;
@@ -6667,6 +6779,7 @@ var $author$project$Main$update = F2(
 							bubbleSortTrack: $author$project$Main$initialTrack(initialArray),
 							insertionSortTrack: $author$project$Main$initialTrack(initialArray),
 							mergeSortTrack: $author$project$Main$initialTrack(initialArray),
+							quickSortTrack: $author$project$Main$initialTrack(initialArray),
 							selectionSortTrack: $author$project$Main$initialTrack(initialArray)
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -6678,6 +6791,7 @@ var $author$project$Main$update = F2(
 							bubbleSortTrack: $author$project$BubbleSort$bubbleSortStep(model.bubbleSortTrack),
 							insertionSortTrack: $author$project$InsertionSort$insertionSortStep(model.insertionSortTrack),
 							mergeSortTrack: $author$project$MergeSort$mergeSortStep(model.mergeSortTrack),
+							quickSortTrack: $author$project$QuickSort$quickSortStep(model.quickSortTrack),
 							selectionSortTrack: $author$project$SelectionSort$selectionSortStep(model.selectionSortTrack)
 						}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -6870,14 +6984,7 @@ var $author$project$Main$view = function (model) {
 							]),
 						_List_fromArray(
 							[
-								A6(
-								$author$project$Visualization$renderComparison,
-								model.selectionSortTrack.array,
-								'Selection Sort',
-								model.selectionSortTrack.sorted,
-								model.selectionSortTrack.outerIndex,
-								model.selectionSortTrack.currentIndex,
-								$elm$core$Maybe$Just(model.selectionSortTrack.minIndex))
+								A6($author$project$Visualization$renderComparison, model.quickSortTrack.array, 'Quick Sort', model.quickSortTrack.sorted, model.quickSortTrack.outerIndex, model.quickSortTrack.currentIndex, $elm$core$Maybe$Nothing)
 							])),
 						A2(
 						$elm$html$Html$div,
