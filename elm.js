@@ -6700,7 +6700,7 @@ var $author$project$QuickSort$quickSortStep = function (track) {
 					rest));
 			return _Utils_update(
 				newTrack,
-				{currentStep: track.currentStep + 1, outerIndex: pivotIndex, stack: newStack});
+				{currentIndex: low, currentStep: track.currentStep + 1, outerIndex: pivotIndex, stack: newStack});
 		} else {
 			return _Utils_update(
 				track,

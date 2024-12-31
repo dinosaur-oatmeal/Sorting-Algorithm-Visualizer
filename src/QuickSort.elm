@@ -35,6 +35,7 @@ quickSortStep track =
                     | stack = newStack
                     , currentStep = track.currentStep + 1
                     , outerIndex = pivotIndex
+                    , currentIndex = low
                 }
             else
                 -- Invalid range (already sorted), delete subarrays on stack
