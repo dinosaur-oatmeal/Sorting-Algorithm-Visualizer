@@ -1,19 +1,76 @@
-.bar-chart {
+/* Base Styles */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
     display: flex;
-    align-items: flex-end; /* Align bars to the bottom of the container */
-    justify-content: space-around;
-    height: 300px; /* Set a fixed height for the chart */
-    border: 1px solid #ddd; /* Optional: Add a border for clarity */
-    margin: 20px;
+    flex-direction: column;
+    min-height: 100vh;
+    align-items: center;
 }
 
-.bar {
-    width: 20px;
-    margin: 2px;
-    background-color: steelblue;
-    transition: height 0.3s ease; /* Smooth height transition for better visuals */
+.sorting-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 350px;
+    margin-bottom: auto; /* Push the container above the button section */
 }
 
-.bar:hover {
-    background-color: darkblue;
+.sorting-card {
+    margin-right: 20px;
+    width: 150px;
+    text-align: center;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.sorting-bar {
+    width: 7px;
+}
+
+.button-container {
+    text-align: center;
+    padding: 10px;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+}
+
+button {
+    padding: 10px 25px;
+    font-size: 16px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: #fff;
+    transition: background-color 0.3s ease; /* Smooth transition on hover */
+}
+
+button:hover:not(:disabled) {
+    background-color: #0056b3; /* Darker shade on hover */
+}
+
+@media (max-width: 1200px) {
+    .sorting-container {
+        flex-direction: column;
+        gap: 50px;
+        align-items: center;
+    }
+
+    .sorting-bar {
+        width: 6px;
+    }
+}
+
+@media (max-width: 600px) {
+    .sorting-bar {
+        width: 5px;
+    }
 }

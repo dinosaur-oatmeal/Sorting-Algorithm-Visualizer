@@ -2,7 +2,7 @@ module Visualization exposing (renderComparison)
 
 -- HTML Elements
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (style, class)
 
 -- Array
 import Array exposing (Array)
@@ -44,7 +44,6 @@ renderComparison array title sorted outerIndex currentIndex maybeMinIndex =
             , style "align-items" "flex-end"
             , style "justify-content" "center"
             , style "height" "150px"
-            , style "border" "1px solid #ccc"
             , style "padding" "5px"
             ]
             (Array.toList array |> List.indexedMap (renderBar sorted outerIndex currentIndex maybeMinIndex))
@@ -95,7 +94,7 @@ renderBar sorted outerIndex currentIndex maybeMinIndex position value =
     in
     div 
         -- Styling for each bar in chart
-        [ style "width" "6px"
+        [ class "sorting-bar"
         , style "height" (String.fromInt (value * 3) ++ "px")
         , style "background-color" barColor
         , style "margin" "1px"

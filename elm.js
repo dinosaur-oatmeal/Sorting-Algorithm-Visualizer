@@ -6849,7 +6849,7 @@ var $author$project$Visualization$renderBar = F6(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					A2($elm$html$Html$Attributes$style, 'width', '6px'),
+					$elm$html$Html$Attributes$class('sorting-bar'),
 					A2(
 					$elm$html$Html$Attributes$style,
 					'height',
@@ -6897,7 +6897,6 @@ var $author$project$Visualization$renderComparison = F6(
 							A2($elm$html$Html$Attributes$style, 'align-items', 'flex-end'),
 							A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
 							A2($elm$html$Html$Attributes$style, 'height', '150px'),
-							A2($elm$html$Html$Attributes$style, 'border', '1px solid #ccc'),
 							A2($elm$html$Html$Attributes$style, 'padding', '5px')
 						]),
 					A2(
