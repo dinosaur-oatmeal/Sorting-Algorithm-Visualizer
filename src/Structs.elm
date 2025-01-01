@@ -16,6 +16,7 @@ type alias SortingTrack =
     -- Position of element that's being compared
     , currentIndex : Int
     -- Minimum index in part of array unsorted (Selection)
+    -- Used to track gaps (Shell)
     , minIndex : Int
     -- Stack to track left and right indices of subarrays (Quick)
     , stack : List ( Int, Int )
@@ -36,6 +37,7 @@ type alias Model =
     , insertionSortTrack : SortingTrack
     , mergeSortTrack : SortingTrack
     , quickSortTrack : SortingTrack
+    , shellSortTrack : SortingTrack
     -- Flag to determine if the sorting algorithms are running
         -- needed for start button
     , running : Bool

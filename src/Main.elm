@@ -26,6 +26,7 @@ import SelectionSort
 import InsertionSort
 import MergeSort
 import QuickSort
+import ShellSort
 
 -- Access to structs needed for program
 import Structs exposing (Model, SortingTrack)
@@ -36,7 +37,8 @@ initialTrack arr =
     { array = arr
     , outerIndex = 0
     , currentIndex = 1
-    , minIndex = 0
+    -- Initialized for Shell Sort
+    , minIndex = (Array.length arr) // 2
     , sorted = False
     , didSwap = False
     , currentStep = 0
@@ -60,6 +62,7 @@ initialModel =
     , insertionSortTrack = initialTrack emptyArray
     , mergeSortTrack = initialTrack emptyArray
     , quickSortTrack = initialTrack emptyArray
+    , shellSortTrack = initialTrack emptyArray
 
     -- Don't run sorting algorithms until "Start" button pressed
     , running = False
@@ -112,6 +115,7 @@ update msg model =
                 , insertionSortTrack = initialTrack initialArray
                 , mergeSortTrack = initialTrack initialArray
                 , quickSortTrack = initialTrack initialArray
+                , shellSortTrack = initialTrack initialArray
               }
             , Cmd.none
             )
@@ -125,6 +129,7 @@ update msg model =
                     , insertionSortTrack = InsertionSort.insertionSortStep model.insertionSortTrack
                     , mergeSortTrack = MergeSort.mergeSortStep model.mergeSortTrack
                     , quickSortTrack = QuickSort.quickSortStep model.quickSortTrack
+                    , shellSortTrack = ShellSort.shellSortStep model.shellSortTrack
                   }
                 , Cmd.none
                 )
@@ -208,13 +213,14 @@ view model =
                 ]
             , div [ class "sorting-card" ]
                 [ renderComparison
-                    -- InsertionSort
-                    model.insertionSortTrack.array
-                    "Insertion Sort"
-                    model.insertionSortTrack.sorted
-                    model.insertionSortTrack.outerIndex
-                    model.insertionSortTrack.currentIndex
-                    Nothing
+                    -- ShellSort
+                    model.shellSortTrack.array
+                    "Shell Sort"
+                    model.shellSortTrack.sorted
+                    model.shellSortTrack.outerIndex
+                    model.shellSortTrack.currentIndex
+                    (Just model.shellSortTrack.minIndex)
+
                 ]
             ]
 

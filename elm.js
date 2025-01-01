@@ -5387,13 +5387,17 @@ var $elm$core$Array$fromList = function (list) {
 		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
 	}
 };
+var $elm$core$Array$length = function (_v0) {
+	var len = _v0.a;
+	return len;
+};
 var $author$project$Main$initialTrack = function (arr) {
 	return {
 		array: arr,
 		currentIndex: 1,
 		currentStep: 0,
 		didSwap: false,
-		minIndex: 0,
+		minIndex: ($elm$core$Array$length(arr) / 2) | 0,
 		outerIndex: 0,
 		sorted: false,
 		stack: _List_fromArray(
@@ -5410,7 +5414,8 @@ var $author$project$Main$initialModel = function () {
 		mergeSortTrack: $author$project$Main$initialTrack(emptyArray),
 		quickSortTrack: $author$project$Main$initialTrack(emptyArray),
 		running: false,
-		selectionSortTrack: $author$project$Main$initialTrack(emptyArray)
+		selectionSortTrack: $author$project$Main$initialTrack(emptyArray),
+		shellSortTrack: $author$project$Main$initialTrack(emptyArray)
 	};
 }();
 var $elm$core$Bitwise$and = _Bitwise_and;
@@ -5978,10 +5983,6 @@ var $elm$core$Array$get = F2(
 			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
 			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
-var $elm$core$Array$length = function (_v0) {
-	var len = _v0.a;
-	return len;
-};
 var $elm$core$Basics$not = _Basics_not;
 var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
 var $elm$core$Array$setHelp = F4(
@@ -6602,6 +6603,7 @@ var $author$project$MergeSort$mergeSortStep = function (track) {
 		track,
 		{
 			array: updatedArray,
+			currentIndex: currentStep,
 			currentStep: isSorted ? currentStep : (currentStep + 1),
 			outerIndex: halfStep,
 			sorted: isSorted
@@ -6756,6 +6758,55 @@ var $author$project$SelectionSort$selectionSortStep = function (track) {
 		}
 	}
 };
+var $author$project$ShellSort$shellSortStep = function (track) {
+	var outer = track.outerIndex;
+	var gap = track.minIndex;
+	var current = track.currentStep;
+	var arr = track.array;
+	var length = $elm$core$Array$length(arr);
+	if (track.sorted || (gap <= 0)) {
+		return _Utils_update(
+			track,
+			{sorted: true});
+	} else {
+		if (_Utils_cmp(outer, length) > -1) {
+			var newGap = (gap === 1) ? 0 : ((gap / 2) | 0);
+			return _Utils_update(
+				track,
+				{currentStep: newGap, minIndex: newGap, outerIndex: newGap});
+		} else {
+			if (_Utils_cmp(current, gap) < 0) {
+				return _Utils_update(
+					track,
+					{currentStep: outer + 1, outerIndex: outer + 1});
+			} else {
+				var _v0 = _Utils_Tuple2(
+					A2($elm$core$Array$get, current, arr),
+					A2($elm$core$Array$get, current - gap, arr));
+				if ((_v0.a.$ === 'Just') && (_v0.b.$ === 'Just')) {
+					var currentValue = _v0.a.a;
+					var gapValue = _v0.b.a;
+					if (_Utils_cmp(currentValue, gapValue) < 0) {
+						var updatedArray = A3(
+							$elm$core$Array$set,
+							current,
+							gapValue,
+							A3($elm$core$Array$set, current - gap, currentValue, arr));
+						return _Utils_update(
+							track,
+							{array: updatedArray, currentIndex: current - gap, currentStep: current - gap});
+					} else {
+						return _Utils_update(
+							track,
+							{currentStep: outer + 1, outerIndex: outer + 1});
+					}
+				} else {
+					return track;
+				}
+			}
+		}
+	}
+};
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -6780,7 +6831,8 @@ var $author$project$Main$update = F2(
 							insertionSortTrack: $author$project$Main$initialTrack(initialArray),
 							mergeSortTrack: $author$project$Main$initialTrack(initialArray),
 							quickSortTrack: $author$project$Main$initialTrack(initialArray),
-							selectionSortTrack: $author$project$Main$initialTrack(initialArray)
+							selectionSortTrack: $author$project$Main$initialTrack(initialArray),
+							shellSortTrack: $author$project$Main$initialTrack(initialArray)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
@@ -6792,7 +6844,8 @@ var $author$project$Main$update = F2(
 							insertionSortTrack: $author$project$InsertionSort$insertionSortStep(model.insertionSortTrack),
 							mergeSortTrack: $author$project$MergeSort$mergeSortStep(model.mergeSortTrack),
 							quickSortTrack: $author$project$QuickSort$quickSortStep(model.quickSortTrack),
-							selectionSortTrack: $author$project$SelectionSort$selectionSortStep(model.selectionSortTrack)
+							selectionSortTrack: $author$project$SelectionSort$selectionSortStep(model.selectionSortTrack),
+							shellSortTrack: $author$project$ShellSort$shellSortStep(model.shellSortTrack)
 						}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -6993,7 +7046,14 @@ var $author$project$Main$view = function (model) {
 							]),
 						_List_fromArray(
 							[
-								A6($author$project$Visualization$renderComparison, model.insertionSortTrack.array, 'Insertion Sort', model.insertionSortTrack.sorted, model.insertionSortTrack.outerIndex, model.insertionSortTrack.currentIndex, $elm$core$Maybe$Nothing)
+								A6(
+								$author$project$Visualization$renderComparison,
+								model.shellSortTrack.array,
+								'Shell Sort',
+								model.shellSortTrack.sorted,
+								model.shellSortTrack.outerIndex,
+								model.shellSortTrack.currentIndex,
+								$elm$core$Maybe$Just(model.shellSortTrack.minIndex))
 							]))
 					])),
 				A2(

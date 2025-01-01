@@ -45,6 +45,7 @@ mergeSortStep track =
                 currentStep
             else
                 currentStep + 1
+        , currentIndex = currentStep
         , outerIndex = halfStep
         , sorted = isSorted
     }
