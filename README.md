@@ -1,3 +1,5 @@
+[Visit The Website Here](https://dinosaur-oatmeal.github.io/Sorting-Algorithm-Visualizer/)
+
 # Sorting Algorithm Visualizer in Elm
 
 This project visualizes various sorting algorithms using the **Elm programming language**, a functional programming language designed for building web applications. This project demonstrates how functional programming techniques can be applied to implement and visualize sorting algorithms in an interactive way using bar charts.
